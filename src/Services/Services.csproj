@@ -5,4 +5,8 @@
     <RootNamespace>AustrianTvScrapper.Services</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.33" />
+  </ItemGroup>
+
 </Project>
