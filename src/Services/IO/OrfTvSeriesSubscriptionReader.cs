@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace AustrianTvScrapper.Services.IO
 {
-    class OrfTvSeriesSubscriptionReader
+    public class OrfTvSeriesSubscriptionReader
     {
         public IReadOnlyCollection<OrfTvSeriesSubscription> Load(string path)
         {

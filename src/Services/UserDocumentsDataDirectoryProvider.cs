@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace AustrianTvScrapper.Services
 {
-    class UserDocumentsDataDirectoryProvider : IDataDirectoryProvider
+    public class UserDocumentsDataDirectoryProvider : IDataDirectoryProvider
     {
         public string GetDataDirectory()
         {

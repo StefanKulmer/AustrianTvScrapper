@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace AustrianTvScrapper.Services.IO
 {
-    class OrfTvSeriesSubscriptionWriter
+    public class OrfTvSeriesSubscriptionWriter
     {
         public static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions(JsonSerializerDefaults.General)
         {

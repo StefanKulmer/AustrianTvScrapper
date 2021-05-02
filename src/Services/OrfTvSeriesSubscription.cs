@@ -13,10 +13,10 @@ namespace AustrianTvScrapper.Services
         public string Name { get; set; }
         public string DownloadSubDirectory { get; set; }
 
-        internal static IReadOnlyCollection<OrfTvSeriesSubscription> AddSubscription(IReadOnlyCollection<OrfTvSeriesSubscription> allSubscriptions, OrfTvSeriesSubscription subscription)
+        public static IReadOnlyCollection<OrfTvSeriesSubscription> AddSubscription(IReadOnlyCollection<OrfTvSeriesSubscription> allSubscriptions, OrfTvSeriesSubscription subscription)
         {
             var newList = new List<OrfTvSeriesSubscription>(allSubscriptions);
-            if (newList.Any(x => x.OrfTvSeriesId == subscription.OrfTvSeriesId))
+            if (newList.All(x => x.OrfTvSeriesId != subscription.OrfTvSeriesId))
             {
                 newList.Add(subscription);
             }
