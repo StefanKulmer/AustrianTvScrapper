@@ -6,6 +6,13 @@ namespace AustrianTvScrapper.Services
 {
     public class OrfTvSeriesSubscriptionService
     {
+        private readonly IDataDirectoryProvider _dataDirectoryProvider;
+
+        public OrfTvSeriesSubscriptionService(IDataDirectoryProvider dataDirectoryProvider)
+        {
+            _dataDirectoryProvider = dataDirectoryProvider;
+        }
+
         public void AddSubscription(OrfTvSeriesSubscription subscription)
         {
             var allSubscriptions = _GetSubscriptions();
@@ -33,9 +40,9 @@ namespace AustrianTvScrapper.Services
             return reader.Load(path);
         }
 
-        private static string _GetSubscriptionDataPath()
+        private string _GetSubscriptionDataPath()
         {
-            return Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "AustrianTvScrapper"), "OrfTvSeriesSubscriptions.json");
+            return Path.Combine(_dataDirectoryProvider.GetDataDirectory(), "OrfTvSeriesSubscriptions.json");
         }
     }
 }
