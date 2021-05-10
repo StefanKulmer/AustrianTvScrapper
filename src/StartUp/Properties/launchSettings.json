@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "StartUp": {
+      "commandName": "Project",
+      "commandLineArgs": "showSeries"
+    }
+  }
+}
