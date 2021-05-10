@@ -1,5 +1,4 @@
 ﻿using AustrianTvScrapper.Services;
-using OrfTvSeriesReader;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
@@ -19,9 +18,10 @@ namespace AustrianTvScrapper.StartUp
                 new Argument<string>("channel", getDefaultValue: ()=> "Orf"),
                 new Option<bool>(new[]{"--subscriptionInfo","-si"}, getDefaultValue: () => true, "shows subscription info"),
                 new Option<bool>(new[]{"--showSubscribed", "-ss"}, getDefaultValue: () => true, "show subscribed"),
-                new Option<bool>(new[]{"--showUnsubscribed", "-su"}, getDefaultValue: () => true, "show unsubscribed")
+                new Option<bool>(new[]{"--showUnsubscribed", "-su"}, getDefaultValue: () => true, "show unsubscribed"),
+                new Option<bool>(new[]{"--writeSnapshot", "-ws"}, getDefaultValue: () => true, "writes a snapshot"),
             };
-            showSeriesCommand.Handler = CommandHandler.Create<string, bool, bool, bool>(_HandleShowSeries);
+            showSeriesCommand.Handler = CommandHandler.Create<string, bool, bool, bool, bool>(_HandleShowSeries);
 
             var rootCommand = new RootCommand()
             {
@@ -34,7 +34,7 @@ namespace AustrianTvScrapper.StartUp
             //_CreateSubscriptionForAll();
         }
 
-        private static void _HandleShowSeries(string channel, bool subscriptionInfo, bool showSubscribed, bool showUnsubscribed)
+        private static void _HandleShowSeries(string channel, bool subscriptionInfo, bool showSubscribed, bool showUnsubscribed, bool writeSnapshot)
         {
             var scrapper = new OrfTvSeriesScrapper();
             var tvSeries = scrapper.GetListOfTvSeries();
@@ -81,6 +81,12 @@ namespace AustrianTvScrapper.StartUp
                 Console.WriteLine($"\t{item.Description}");
                 Console.WriteLine($"\t{item.Channel}");
                 Console.WriteLine($"\t{item.Profile}");
+            }
+
+            if (writeSnapshot)
+            {
+                var snapshotService = new OrfTvSeriesSnapshotService(new UserDocumentsDataDirectoryProvider(), scrapper);
+                snapshotService.CreateSnapshot(tvSeries);
             }
         }
 
