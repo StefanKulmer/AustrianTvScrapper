@@ -36,6 +36,15 @@ namespace AustrianTvScrapper.Services
             writer.Save(path, snapshot);
         }
 
+        public OrfTvSeriesSnapshot ReadSnapshot(string filename)
+        {
+            var path = Path.Combine(_dataDirectoryProvider.GetDataDirectory(), filename);
+
+            var reader = new OrfTvSeriesSnapshotReader();
+
+            return reader.Load(path);
+        }
+
         private string _GetSnapshotPath(DateTime timestamp)
         {
             return Path.Combine(_dataDirectoryProvider.GetDataDirectory(), $"OrfTvSeries_{timestamp:yyyyMMdd_HHmmss}.json");
