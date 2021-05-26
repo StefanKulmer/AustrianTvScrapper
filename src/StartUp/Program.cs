@@ -31,7 +31,7 @@ namespace AustrianTvScrapper.StartUp
 
             rootCommand.Invoke(args);
 
-            //_CreateSubscriptionForAll();
+            _CreateSubscriptionForAll();
         }
 
         private static void _HandleShowSeries(string channel, bool subscriptionInfo, bool showSubscribed, bool showUnsubscribed)

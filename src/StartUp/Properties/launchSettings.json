@@ -2,7 +2,7 @@
   "profiles": {
     "StartUp": {
       "commandName": "Project",
-      "commandLineArgs": "showSeries"
+      "commandLineArgs": "showSeries -cs OrfTvSeries_20210511_231859.json"
     }
   }
 }
