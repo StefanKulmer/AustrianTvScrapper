@@ -21,8 +21,9 @@ namespace AustrianTvScrapper.StartUp
                 new Option<bool>(new[]{"--showUnsubscribed", "-su"}, getDefaultValue: () => true, "show unsubscribed"),
                 new Option<bool>(new[]{"--writeSnapshot", "-ws"}, getDefaultValue: () => true, "writes a snapshot"),
                 new Option<string>(new[]{ "--compareSnapshotFilename", "-cs"}, getDefaultValue: () => null, "compares to a snapshot"),
+                new Option<bool>(new[]{ "--showNewOnly", "-sno"}, getDefaultValue: () => true, "show new series only when comparing to snapshot"),
             };
-            showSeriesCommand.Handler = CommandHandler.Create<string, bool, bool, bool, bool, string>(_HandleShowSeries);
+            showSeriesCommand.Handler = CommandHandler.Create<string, bool, bool, bool, bool, string, bool>(_HandleShowSeries);
 
             var rootCommand = new RootCommand()
             {
@@ -35,7 +36,7 @@ namespace AustrianTvScrapper.StartUp
             _CreateSubscriptionForAll();
         }
 
-        private static void _HandleShowSeries(string channel, bool subscriptionInfo, bool showSubscribed, bool showUnsubscribed, bool writeSnapshot, string compareSnapshotFilename)
+        private static void _HandleShowSeries(string channel, bool subscriptionInfo, bool showSubscribed, bool showUnsubscribed, bool writeSnapshot, string compareSnapshotFilename, bool showNewOnly)
         {
             var scrapper = new OrfTvSeriesScrapper();
             var tvSeries = scrapper.GetListOfTvSeries();
@@ -45,10 +46,13 @@ namespace AustrianTvScrapper.StartUp
 
             var snapshotService = new OrfTvSeriesSnapshotService(new UserDocumentsDataDirectoryProvider(), scrapper);
 
-            OrfTvSeriesSnapshot compareSnapshot = null;
+            IReadOnlyCollection<KeyValuePair<ComparisonResult, OrfTvSeries>> comparisonResult = null;
             if (compareSnapshotFilename != null)
             {
-                compareSnapshot = snapshotService.ReadSnapshot(compareSnapshotFilename);
+                var compareSnapshot = snapshotService.ReadSnapshot(compareSnapshotFilename);
+
+                var comparisonService = new OrfTvSeriesComparisonService();
+                comparisonResult = comparisonService.Compare(tvSeries, compareSnapshot.OrfTvSeries);
             }
 
             foreach (var item in tvSeries)
@@ -79,11 +83,14 @@ namespace AustrianTvScrapper.StartUp
 
                 if (compareSnapshotFilename != null)
                 {
-                    var wasExisting = compareSnapshot.OrfTvSeries.Any(x => x.Id == item.Id);
-
-                    if (!wasExisting)
-                    {
+                    var result = comparisonResult.FirstOrDefault(x => string.Compare(x.Value.Id, item.Id) == 0);
+                    if (result.Key == ComparisonResult.ExistsOnlyOnLeftSide)
+                    { 
                         Console.Write("NEW ");
+                    }
+                    else if (showNewOnly)
+                    {
+                        continue;
                     }
                 }
 
@@ -91,14 +98,14 @@ namespace AustrianTvScrapper.StartUp
             }
 
             // show series which are no longer existing
-            if (compareSnapshotFilename != null)
+            if (compareSnapshotFilename != null && !showNewOnly)
             {
-                foreach (var compareSeries in compareSnapshot.OrfTvSeries)
+                foreach (var comparisonEntry in comparisonResult)
                 {
-                    if (!tvSeries.Any(x => x.Id == compareSeries.Id))
-                    {
+                    if (comparisonEntry.Key == ComparisonResult.ExistsOnlyOnRightSide)
+                    { 
                         Console.Write("OLD ");
-                        _WriteTvSeries(compareSeries, true);
+                        _WriteTvSeries(comparisonEntry.Value, true);
                     }
                 }
             }
