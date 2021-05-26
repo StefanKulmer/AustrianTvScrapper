@@ -1,5 +1,4 @@
 ﻿using AustrianTvScrapper.Services;
-using OrfTvSeriesReader;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
@@ -19,9 +18,11 @@ namespace AustrianTvScrapper.StartUp
                 new Argument<string>("channel", getDefaultValue: ()=> "Orf"),
                 new Option<bool>(new[]{"--subscriptionInfo","-si"}, getDefaultValue: () => true, "shows subscription info"),
                 new Option<bool>(new[]{"--showSubscribed", "-ss"}, getDefaultValue: () => true, "show subscribed"),
-                new Option<bool>(new[]{"--showUnsubscribed", "-su"}, getDefaultValue: () => true, "show unsubscribed")
+                new Option<bool>(new[]{"--showUnsubscribed", "-su"}, getDefaultValue: () => true, "show unsubscribed"),
+                new Option<bool>(new[]{"--writeSnapshot", "-ws"}, getDefaultValue: () => true, "writes a snapshot"),
+                new Option<string>(new[]{ "--compareSnapshotFilename", "-cs"}, getDefaultValue: () => null, "compares to a snapshot"),
             };
-            showSeriesCommand.Handler = CommandHandler.Create<string, bool, bool, bool>(_HandleShowSeries);
+            showSeriesCommand.Handler = CommandHandler.Create<string, bool, bool, bool, bool, string>(_HandleShowSeries);
 
             var rootCommand = new RootCommand()
             {
@@ -34,13 +35,21 @@ namespace AustrianTvScrapper.StartUp
             _CreateSubscriptionForAll();
         }
 
-        private static void _HandleShowSeries(string channel, bool subscriptionInfo, bool showSubscribed, bool showUnsubscribed)
+        private static void _HandleShowSeries(string channel, bool subscriptionInfo, bool showSubscribed, bool showUnsubscribed, bool writeSnapshot, string compareSnapshotFilename)
         {
             var scrapper = new OrfTvSeriesScrapper();
             var tvSeries = scrapper.GetListOfTvSeries();
 
             var subscriptionService = new OrfTvSeriesSubscriptionService(new UserDocumentsDataDirectoryProvider());
             var subscriptions = subscriptionService.GetSubscriptions();
+
+            var snapshotService = new OrfTvSeriesSnapshotService(new UserDocumentsDataDirectoryProvider(), scrapper);
+
+            OrfTvSeriesSnapshot compareSnapshot = null;
+            if (compareSnapshotFilename != null)
+            {
+                compareSnapshot = snapshotService.ReadSnapshot(compareSnapshotFilename);
+            }
 
             foreach (var item in tvSeries)
             {
@@ -66,22 +75,53 @@ namespace AustrianTvScrapper.StartUp
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
                     }
-
                 }
 
-
-                Console.WriteLine($"{item.Title} ({item.Id})");
-
-                if (subscriptionInfo)
+                if (compareSnapshotFilename != null)
                 {
-                    Console.ResetColor();
+                    var wasExisting = compareSnapshot.OrfTvSeries.Any(x => x.Id == item.Id);
+
+                    if (!wasExisting)
+                    {
+                        Console.Write("NEW ");
+                    }
                 }
 
-                Console.WriteLine($"\t{item.Url}");
-                Console.WriteLine($"\t{item.Description}");
-                Console.WriteLine($"\t{item.Channel}");
-                Console.WriteLine($"\t{item.Profile}");
+                _WriteTvSeries(item, subscriptionInfo);
             }
+
+            // show series which are no longer existing
+            if (compareSnapshotFilename != null)
+            {
+                foreach (var compareSeries in compareSnapshot.OrfTvSeries)
+                {
+                    if (!tvSeries.Any(x => x.Id == compareSeries.Id))
+                    {
+                        Console.Write("OLD ");
+                        _WriteTvSeries(compareSeries, true);
+                    }
+                }
+            }
+
+            if (writeSnapshot)
+            {
+                snapshotService.CreateSnapshot(tvSeries);
+            }
+        }
+
+        private static void _WriteTvSeries(OrfTvSeries item, bool resetColorAfterTitle)
+        {
+            Console.WriteLine($"{item.Title} ({item.Id})");
+
+            if (resetColorAfterTitle)
+            {
+                Console.ResetColor();
+            }
+
+            Console.WriteLine($"\t{item.Url}");
+            Console.WriteLine($"\t{item.Description}");
+            Console.WriteLine($"\t{item.Channel}");
+            Console.WriteLine($"\t{item.Profile}");
         }
 
         private static bool _HasSubscription(OrfTvSeries tvSeries, IReadOnlyCollection<OrfTvSeriesSubscription> subscriptions)

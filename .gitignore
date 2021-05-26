@@ -3,3 +3,4 @@ src/*/obj/*
 src/*/bin/*
 src/tests/*/bin/*
 src/tests/*/obj/*
+src/Services/Services.csproj.user
