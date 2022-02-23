@@ -9,9 +9,13 @@ namespace AustrianTvScrapper.StartUp.Commands
 {
     internal class ShowSeriesCommand : Command
     {
-        public ShowSeriesCommand() 
+        private readonly IOrfTvSeriesScrapper orfTvSeriesScrapper;
+
+        public ShowSeriesCommand(IOrfTvSeriesScrapper orfTvSeriesScrapper)
             : base("showSeries", "shows available series")
         {
+            this.orfTvSeriesScrapper = orfTvSeriesScrapper;
+
             AddArgument(new Argument<string>("channel", getDefaultValue: () => "Orf"));
             AddOption(new Option<bool>(new[] { "--subscriptionInfo", "-si" }, getDefaultValue: () => true, "shows subscription info"));
             AddOption(new Option<bool>(new[] { "--showSubscribed", "-ss" }, getDefaultValue: () => true, "show subscribed"));
@@ -20,13 +24,12 @@ namespace AustrianTvScrapper.StartUp.Commands
             AddOption(new Option<string>(new[] { "--compareSnapshotFilename", "-cs" }, getDefaultValue: () => null, "compares to a snapshot"));
             AddOption(new Option<bool>(new[] { "--showNewOnly", "-sno" }, getDefaultValue: () => true, "show new series only when comparing to snapshot"));
 
-            Handler = CommandHandler.Create<string, bool, bool, bool, bool, string, bool>(_HandleShowSeries);
+            Handler = CommandHandler.Create<string, bool, bool, bool, bool, string, bool>(_HandleCommand);
         }
 
-        private static void _HandleShowSeries(string channel, bool subscriptionInfo, bool showSubscribed, bool showUnsubscribed, bool writeSnapshot, string compareSnapshotFilename, bool showNewOnly)
+        private void _HandleCommand(string channel, bool subscriptionInfo, bool showSubscribed, bool showUnsubscribed, bool writeSnapshot, string compareSnapshotFilename, bool showNewOnly)
         {
-            var scrapper = new OrfTvSeriesScrapper();
-            var tvSeries = scrapper.GetListOfTvSeries();
+            var tvSeries = orfTvSeriesScrapper.GetListOfTvSeries();
 
             var subscriptionService = new OrfTvSeriesSubscriptionService(new UserDocumentsDataDirectoryProvider());
             var subscriptions = subscriptionService.GetSubscriptions();

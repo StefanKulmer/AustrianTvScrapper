@@ -10,18 +10,21 @@ namespace AustrianTvScrapper.StartUp.Commands
 {
     internal class ShowUndefinedCommand : Command
     {
-        public ShowUndefinedCommand() 
+        private readonly IOrfTvSeriesScrapper orfTvSeriesScrapper;
+
+        public ShowUndefinedCommand(IOrfTvSeriesScrapper orfTvSeriesScrapper) 
             : base("showUndefined", "shows undefined series")
         {
+            this.orfTvSeriesScrapper = orfTvSeriesScrapper;
+
             AddArgument(new Argument<string>("channel", getDefaultValue: () => "Orf"));
 
-            Handler = CommandHandler.Create<string>(_HandleShowUndefined);
+            Handler = CommandHandler.Create<string>(_HandleCommand);
         }
 
-        private static void _HandleShowUndefined(string obj)
+        private void _HandleCommand(string obj)
         {
-            var scrapper = new OrfTvSeriesScrapper();
-            var tvSeries = scrapper.GetListOfTvSeries();
+            var tvSeries = orfTvSeriesScrapper.GetListOfTvSeries();
 
             var subscriptionService = new OrfTvSeriesSubscriptionService(new UserDocumentsDataDirectoryProvider());
             var subscriptions = subscriptionService.GetSubscriptions();

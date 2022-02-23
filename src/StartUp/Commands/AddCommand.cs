@@ -8,9 +8,13 @@ namespace AustrianTvScrapper.StartUp.Commands
 {
     internal class AddCommand : Command
     {
-        public AddCommand()
+        private readonly IOrfTvSeriesScrapper orfTvSeriesScrapper;
+
+        public AddCommand(IOrfTvSeriesScrapper orfTvSeriesScrapper)
             : base("add", "adds a subscription")
         {
+            this.orfTvSeriesScrapper = orfTvSeriesScrapper;
+
             AddArgument(new Argument<string>("channel", getDefaultValue: () => "Orf"));
             AddOption(new Option<uint>(new[] { "--id", "-id" }, "id of series"));
             AddOption(new Option<string>(new[] { "--downloadSubDirectory", "-dir" }, () => string.Empty, description: "sub directory"));
@@ -18,10 +22,9 @@ namespace AustrianTvScrapper.StartUp.Commands
             Handler = CommandHandler.Create<string, uint, string>(_HandleCommand);
         }
 
-        private static void _HandleCommand(string channel, uint id, string downloadSubDirectory)
+        private void _HandleCommand(string channel, uint id, string downloadSubDirectory)
         {
-            var scrapper = new OrfTvSeriesScrapper();
-            var tvSeries = scrapper.GetListOfTvSeries();
+            var tvSeries = orfTvSeriesScrapper.GetListOfTvSeries();
 
             var subscriptionService = new OrfTvSeriesSubscriptionService(new UserDocumentsDataDirectoryProvider());
             var subscriptions = subscriptionService.GetSubscriptions();

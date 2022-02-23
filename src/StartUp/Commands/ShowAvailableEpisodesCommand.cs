@@ -8,18 +8,21 @@ namespace AustrianTvScrapper.StartUp.Commands
 {
     internal class ShowAvailableEpisodesCommand : Command
     {
-        public ShowAvailableEpisodesCommand()
+        private readonly IOrfTvSeriesScrapper orfTvSeriesScrapper;
+
+        public ShowAvailableEpisodesCommand(IOrfTvSeriesScrapper orfTvSeriesScrapper)
             : base("getSubscribedEpisodes", "gets all epsiodes for the subscriptions")
         {
+            this.orfTvSeriesScrapper = orfTvSeriesScrapper;
+
             AddArgument(new Argument<string>("channel", getDefaultValue: () => "Orf"));
 
             Handler = CommandHandler.Create<string>(_HandleCommand);
         }
 
-        private static void _HandleCommand(string channel)
+        private void _HandleCommand(string channel)
         {
-            var scrapper = new OrfTvSeriesScrapper();
-            var tvSeries = scrapper.GetListOfTvSeries();
+            var tvSeries = orfTvSeriesScrapper.GetListOfTvSeries();
 
             var subscriptionService = new OrfTvSeriesSubscriptionService(new UserDocumentsDataDirectoryProvider());
             var subscriptions = subscriptionService.GetSubscriptions();

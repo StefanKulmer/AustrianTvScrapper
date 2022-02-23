@@ -2,7 +2,7 @@
 
 namespace AustrianTvScrapper.Services
 {
-    internal interface IOrfTvSeriesScrapper
+    public interface IOrfTvSeriesScrapper
     {
         IReadOnlyCollection<OrfTvSeries> GetListOfTvSeries();
     }

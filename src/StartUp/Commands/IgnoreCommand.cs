@@ -9,9 +9,13 @@ namespace AustrianTvScrapper.StartUp.Commands
 {
     internal class IgnoreCommand : Command
     {
-        public IgnoreCommand()
+        private readonly IOrfTvSeriesScrapper orfTvSeriesScrapper;
+
+        public IgnoreCommand(IOrfTvSeriesScrapper orfTvSeriesScrapper)
             : base("ignore", "ignores a series")
         {
+            this.orfTvSeriesScrapper = orfTvSeriesScrapper;
+
             AddArgument(new Argument<string>("channel", getDefaultValue: () => "Orf"));
             AddOption(new Option<uint?>(new[] { "--id", "-id" }, "id of series"));
             AddOption(new Option(new[] { "--all", "-a" }, "ignoring all unknown, overrides id"));
@@ -19,10 +23,9 @@ namespace AustrianTvScrapper.StartUp.Commands
             Handler = CommandHandler.Create<string, uint, bool>(_HandleCommand);
         }
 
-        private static void _HandleCommand(string channel, uint id, bool all)
+        private void _HandleCommand(string channel, uint id, bool all)
         {
-            var scrapper = new OrfTvSeriesScrapper();
-            var tvSeries = scrapper.GetListOfTvSeries();
+            var tvSeries = orfTvSeriesScrapper.GetListOfTvSeries();
 
             var unsubscribedService = new OrfTvSeriesSubscriptionService(
                 new UserDocumentsDataDirectoryProvider(),

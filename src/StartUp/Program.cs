@@ -49,6 +49,7 @@ namespace SystemCommandLine.Demo
 
             services.AddSingleton<IConfiguration>(config);
             services.AddCliCommands();
+            services.AddOrfTvSeriesCommands();
 
             return services.BuildServiceProvider();
         }
