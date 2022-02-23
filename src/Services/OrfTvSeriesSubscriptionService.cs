@@ -6,11 +6,14 @@ namespace AustrianTvScrapper.Services
 {
     public class OrfTvSeriesSubscriptionService
     {
+        private const string DefaultFileName = "OrfTvSeriesSubscriptions.json";
         private readonly IDataDirectoryProvider _dataDirectoryProvider;
+        private readonly string _fileName;
 
-        public OrfTvSeriesSubscriptionService(IDataDirectoryProvider dataDirectoryProvider)
+        public OrfTvSeriesSubscriptionService(IDataDirectoryProvider dataDirectoryProvider, string filename = DefaultFileName)
         {
             _dataDirectoryProvider = dataDirectoryProvider;
+            _fileName = filename;
         }
 
         public void AddSubscription(OrfTvSeriesSubscription subscription)
@@ -42,7 +45,7 @@ namespace AustrianTvScrapper.Services
 
         private string _GetSubscriptionDataPath()
         {
-            return Path.Combine(_dataDirectoryProvider.GetDataDirectory(), "OrfTvSeriesSubscriptions.json");
+            return Path.Combine(_dataDirectoryProvider.GetDataDirectory(), _fileName);
         }
     }
 }

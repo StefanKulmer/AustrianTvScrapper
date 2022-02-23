@@ -12,6 +12,7 @@ namespace AustrianTvScrapper.Services
         public OrfTvSeries OrfTvSeries { get; set; }
         public string Name { get; set; }
         public string DownloadSubDirectory { get; set; }
+        public DateTime? TimestampCreated { get; set; }
 
         public static IReadOnlyCollection<OrfTvSeriesSubscription> AddSubscription(IReadOnlyCollection<OrfTvSeriesSubscription> allSubscriptions, OrfTvSeriesSubscription subscription)
         {
@@ -31,8 +32,10 @@ namespace AustrianTvScrapper.Services
         {
             return new OrfTvSeriesSubscription()
             {
+                OrfTvSeriesId = tvSeries.Id,
                 OrfTvSeries = tvSeries,
                 Name = tvSeries.Title,
+                TimestampCreated = DateTime.Now
             };
         }
     }
