@@ -8,9 +8,9 @@ namespace AustrianTvScrapper.Services
     public class OrfTvSeriesSnapshotService
     {
         private readonly IDataDirectoryProvider _dataDirectoryProvider;
-        private readonly OrfTvSeriesScrapper _orfTvSeriesScrapper;
+        private readonly IOrfTvSeriesScrapper _orfTvSeriesScrapper;
 
-        public OrfTvSeriesSnapshotService(IDataDirectoryProvider dataDirectoryProvider, OrfTvSeriesScrapper orfTvSeriesScrapper)
+        public OrfTvSeriesSnapshotService(IDataDirectoryProvider dataDirectoryProvider, IOrfTvSeriesScrapper orfTvSeriesScrapper)
         {
             _dataDirectoryProvider = dataDirectoryProvider;
             _orfTvSeriesScrapper = orfTvSeriesScrapper;
