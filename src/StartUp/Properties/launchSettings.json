@@ -2,7 +2,27 @@
   "profiles": {
     "StartUp": {
       "commandName": "Project",
-      "commandLineArgs": "showSeries -cs OrfTvSeries_20210510_231649.json"
+      "commandLineArgs": "showSeries -su -ws"
+    },
+    "ShowSubscribed": {
+      "commandName": "Project",
+      "commandLineArgs": "showSeries -si"
+    },
+    "WriteUnsubscribed": {
+      "commandName": "Project",
+      "commandLineArgs": "writeUnsubscribed"
+    },
+    "ShowUndefined": {
+      "commandName": "Project",
+      "commandLineArgs": "showUndefined"
+    },
+    "Ignore": {
+      "commandName": "Project",
+      "commandLineArgs": "ignore --id 13893662"
+    },
+    "Add": {
+      "commandName": "Project",
+      "commandLineArgs": "add --id 13893662"
     }
   }
 }
