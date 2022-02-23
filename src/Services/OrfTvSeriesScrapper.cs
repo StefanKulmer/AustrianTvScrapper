@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace AustrianTvScrapper.Services
 {
-    public class OrfTvSeriesScrapper
+    public class OrfTvSeriesScrapper : IOrfTvSeriesScrapper
     {
         public IReadOnlyCollection<OrfTvSeries> GetListOfTvSeries()
         {
