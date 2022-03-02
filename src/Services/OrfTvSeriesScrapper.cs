@@ -4,8 +4,10 @@ using System.Linq;
 
 namespace AustrianTvScrapper.Services
 {
-    public class OrfTvSeriesScrapper : IOrfTvSeriesScrapper
+    public class OrfTvSeriesScrapper : IOrfTvSeriesScrapper, IUncachedService<IOrfTvSeriesScrapper>
     {
+        public IOrfTvSeriesScrapper Instance => this;
+
         public IReadOnlyCollection<OrfTvSeries> GetListOfTvSeries()
         {
             var rootUrl = "https://tvthek.orf.at/profiles";

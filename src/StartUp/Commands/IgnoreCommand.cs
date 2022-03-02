@@ -17,13 +17,13 @@ namespace AustrianTvScrapper.StartUp.Commands
             this.orfTvSeriesScrapper = orfTvSeriesScrapper;
 
             AddArgument(new Argument<string>("channel", getDefaultValue: () => "Orf"));
-            AddOption(new Option<uint?>(new[] { "--id", "-id" }, "id of series"));
+            AddOption(new Option<int?>(new[] { "--id", "-id" }, "id of series"));
             AddOption(new Option(new[] { "--all", "-a" }, "ignoring all unknown, overrides id"));
 
-            Handler = CommandHandler.Create<string, uint, bool>(_HandleCommand);
+            Handler = CommandHandler.Create<string, int?, bool>(_HandleCommand);
         }
 
-        private void _HandleCommand(string channel, uint id, bool all)
+        private void _HandleCommand(string channel, int? id, bool all)
         {
             var tvSeries = orfTvSeriesScrapper.GetListOfTvSeries();
 

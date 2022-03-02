@@ -14,7 +14,10 @@
         /// <returns>The service collection, for chaining.</returns>
         public static IServiceCollection AddOrfTvSeriesCommands(this IServiceCollection services)
         {
-            services.AddScoped<IOrfTvSeriesScrapper, OrfTvSeriesScrapper>();
+            services.AddScoped<IOrfTvSeriesScrapper, CachedOrfTvSeriesScrapper>();
+            services.AddScoped<IUncachedService<IOrfTvSeriesScrapper>, OrfTvSeriesScrapper>();
+            services.AddScoped<IOrfTvSeriesSnapshotService, OrfTvSeriesSnapshotService>();
+            services.AddScoped<IDataDirectoryProvider, UserDocumentsDataDirectoryProvider>();
 
             return services;
         }

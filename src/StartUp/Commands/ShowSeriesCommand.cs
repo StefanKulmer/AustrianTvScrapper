@@ -10,11 +10,13 @@ namespace AustrianTvScrapper.StartUp.Commands
     internal class ShowSeriesCommand : Command
     {
         private readonly IOrfTvSeriesScrapper orfTvSeriesScrapper;
+        private readonly IOrfTvSeriesSnapshotService orfTvSeriesSnapshotService;
 
-        public ShowSeriesCommand(IOrfTvSeriesScrapper orfTvSeriesScrapper)
+        public ShowSeriesCommand(IOrfTvSeriesScrapper orfTvSeriesScrapper, IOrfTvSeriesSnapshotService orfTvSeriesSnapshotService)
             : base("showSeries", "shows available series")
         {
             this.orfTvSeriesScrapper = orfTvSeriesScrapper;
+            this.orfTvSeriesSnapshotService = orfTvSeriesSnapshotService;
 
             AddArgument(new Argument<string>("channel", getDefaultValue: () => "Orf"));
             AddOption(new Option<bool>(new[] { "--subscriptionInfo", "-si" }, getDefaultValue: () => true, "shows subscription info"));
@@ -34,12 +36,10 @@ namespace AustrianTvScrapper.StartUp.Commands
             var subscriptionService = new OrfTvSeriesSubscriptionService(new UserDocumentsDataDirectoryProvider());
             var subscriptions = subscriptionService.GetSubscriptions();
 
-            var snapshotService = new OrfTvSeriesSnapshotService(new UserDocumentsDataDirectoryProvider(), orfTvSeriesScrapper);
-
             IReadOnlyCollection<KeyValuePair<ComparisonResult, OrfTvSeries>> comparisonResult = null;
             if (compareSnapshotFilename != null)
             {
-                var compareSnapshot = snapshotService.ReadSnapshot(compareSnapshotFilename);
+                var compareSnapshot = orfTvSeriesSnapshotService.ReadSnapshot(compareSnapshotFilename);
 
                 var comparisonService = new OrfTvSeriesComparisonService();
                 comparisonResult = comparisonService.Compare(tvSeries, compareSnapshot.OrfTvSeries);
@@ -98,11 +98,6 @@ namespace AustrianTvScrapper.StartUp.Commands
                         _WriteTvSeries(comparisonEntry.Value, true);
                     }
                 }
-            }
-
-            if (writeSnapshot)
-            {
-                snapshotService.CreateSnapshot(tvSeries);
             }
         }
 

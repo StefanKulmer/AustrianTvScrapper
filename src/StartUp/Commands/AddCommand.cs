@@ -16,13 +16,13 @@ namespace AustrianTvScrapper.StartUp.Commands
             this.orfTvSeriesScrapper = orfTvSeriesScrapper;
 
             AddArgument(new Argument<string>("channel", getDefaultValue: () => "Orf"));
-            AddOption(new Option<uint>(new[] { "--id", "-id" }, "id of series"));
+            AddOption(new Option<int>(new[] { "--id", "-id" }, "id of series"));
             AddOption(new Option<string>(new[] { "--downloadSubDirectory", "-dir" }, () => string.Empty, description: "sub directory"));
 
-            Handler = CommandHandler.Create<string, uint, string>(_HandleCommand);
+            Handler = CommandHandler.Create<string, int, string>(_HandleCommand);
         }
 
-        private void _HandleCommand(string channel, uint id, string downloadSubDirectory)
+        private void _HandleCommand(string channel, int id, string downloadSubDirectory)
         {
             var tvSeries = orfTvSeriesScrapper.GetListOfTvSeries();
 
