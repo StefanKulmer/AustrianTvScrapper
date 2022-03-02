@@ -1,9 +1,5 @@
 {
   "profiles": {
-    "StartUp": {
-      "commandName": "Project",
-      "commandLineArgs": "showSeries -su -ws"
-    },
     "ShowSubscribed": {
       "commandName": "Project",
       "commandLineArgs": "showSeries -si"
@@ -23,6 +19,10 @@
     "Add": {
       "commandName": "Project",
       "commandLineArgs": "add --id 13893662"
+    },
+    "showSeries": {
+      "commandName": "Project",
+      "commandLineArgs": "showSeries"
     }
   }
 }

@@ -2,28 +2,33 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace AustrianTvScrapper.Services
 {
-    public class OrfTvSeriesSnapshotService
+    public class OrfTvSeriesSnapshotService : IOrfTvSeriesSnapshotService
     {
-        private readonly IDataDirectoryProvider _dataDirectoryProvider;
-        private readonly OrfTvSeriesScrapper _orfTvSeriesScrapper;
+        private const string SnapshotPrefix = "OrfTvSeries_Snapshot";
 
-        public OrfTvSeriesSnapshotService(IDataDirectoryProvider dataDirectoryProvider, OrfTvSeriesScrapper orfTvSeriesScrapper)
+        private readonly IDataDirectoryProvider _dataDirectoryProvider;
+        private readonly IOrfTvSeriesScrapper _orfTvSeriesScrapper;
+
+        public OrfTvSeriesSnapshotService(IDataDirectoryProvider dataDirectoryProvider, IUncachedService<IOrfTvSeriesScrapper> orfTvSeriesScrapper)
         {
             _dataDirectoryProvider = dataDirectoryProvider;
-            _orfTvSeriesScrapper = orfTvSeriesScrapper;
+            _orfTvSeriesScrapper = orfTvSeriesScrapper.Instance;
         }
 
-        public void CreateSnapshot()
+        public IReadOnlyCollection<OrfTvSeries> CreateSnapshot()
         {
             var tvSeries = _orfTvSeriesScrapper.GetListOfTvSeries();
 
             CreateSnapshot(tvSeries);
+
+            return tvSeries;
         }
 
-        public void CreateSnapshot(IReadOnlyCollection<OrfTvSeries> tvSeries)
+        public string CreateSnapshot(IReadOnlyCollection<OrfTvSeries> tvSeries)
         {
             var snapshot = new OrfTvSeriesSnapshot()
             {
@@ -31,9 +36,23 @@ namespace AustrianTvScrapper.Services
                 OrfTvSeries = new List<OrfTvSeries>(tvSeries)
             };
 
-            var path = _GetSnapshotPath(snapshot.Timestamp);
+            var fileName = _GetSnapshotFileName(snapshot.Timestamp);
+            var path = Path.Combine(_dataDirectoryProvider.GetDataDirectory(), fileName);
+
             var writer = new OrfTvSeriesSnapshotWriter();
             writer.Save(path, snapshot);
+
+            return fileName;
+        }
+
+        public OrfTvSeriesSnapshot GetLastSnapshot()
+        {
+            var file = Directory.GetFiles(_dataDirectoryProvider.GetDataDirectory(), $"{SnapshotPrefix}*.json").OrderBy(x => x).LastOrDefault();
+            if (file == null)
+                return null;
+
+            var reader = new OrfTvSeriesSnapshotReader();
+            return reader.Load(file);
         }
 
         public OrfTvSeriesSnapshot ReadSnapshot(string filename)
@@ -45,9 +64,9 @@ namespace AustrianTvScrapper.Services
             return reader.Load(path);
         }
 
-        private string _GetSnapshotPath(DateTime timestamp)
+        private string _GetSnapshotFileName(DateTime timestamp)
         {
-            return Path.Combine(_dataDirectoryProvider.GetDataDirectory(), $"OrfTvSeries_{timestamp:yyyyMMdd_HHmmss}.json");
+            return $"{SnapshotPrefix}_{timestamp:yyyyMMdd_HHmmss}.json";
         }
     }
 }
