@@ -1,48 +1,78 @@
 ﻿using AustrianTvScrapper.Services;
 using System;
+using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.NamingConventionBinder;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace AustrianTvScrapper.StartUp.Commands
 {
     internal class ShowAvailableEpisodesCommand : Command
     {
-        private readonly IOrfTvSeriesScrapper orfTvSeriesScrapper;
+        private readonly IOrfTvSeriesScrapper seriesScrapper;
+        private readonly IOrfTvSeriesEpisodesProvider episodesProvider;
 
-        public ShowAvailableEpisodesCommand(IOrfTvSeriesScrapper orfTvSeriesScrapper)
-            : base("getSubscribedEpisodes", "gets all epsiodes for the subscriptions")
+        public ShowAvailableEpisodesCommand(IOrfTvSeriesScrapper seriesScrapper, IOrfTvSeriesEpisodesProvider episodesProvider)
+            : base("showEpisodes", "shows all epsiodes for a series")
         {
-            this.orfTvSeriesScrapper = orfTvSeriesScrapper;
+            this.seriesScrapper = seriesScrapper;
+            this.episodesProvider = episodesProvider;
 
             AddArgument(new Argument<string>("channel", getDefaultValue: () => "Orf"));
+            AddOption(new Option<int?>(new[] { "--id", "-id" }, "id of series"));
+            AddOption(new Option(new[] { "--all", "-a" }, "ignoring all unknown, overrides id"));
 
-            Handler = CommandHandler.Create<string>(_HandleCommand);
+            Handler = CommandHandler.Create<string, int?, bool>(_HandleCommand);
         }
 
-        private void _HandleCommand(string channel)
+        private async Task _HandleCommand(string channel, int? id, bool all)
         {
-            var tvSeries = orfTvSeriesScrapper.GetListOfTvSeries();
+            var tvSeries = seriesScrapper.GetListOfTvSeries();
 
-            var subscriptionService = new OrfTvSeriesSubscriptionService(new UserDocumentsDataDirectoryProvider());
-            var subscriptions = subscriptionService.GetSubscriptions();
-
-            var episodeProvider = new OrfTvSeriesEpisodesProvider();
-
-            foreach (var subscription in subscriptions)
+            if (!all)
             {
-                var tvSeriesItem = tvSeries.FirstOrDefault(x => x.Id == subscription.OrfTvSeriesId);
-                if (tvSeriesItem == null)
+                var series = tvSeries.FirstOrDefault(s => s.Id == id.ToString());
+                if (series == null)
                 {
-                    continue;
+                    Console.WriteLine($"series with id {id} doesn't exist");
+                    return;
                 }
 
-                var episodes = episodeProvider.GetAvailableEpisodes(tvSeriesItem);
+                var episodes = await episodesProvider.GetEpisodesAsync(series);
+                _showEpisodes(series, episodes);
+            }
+            else
+            {
+                var subscriptionService = new OrfTvSeriesSubscriptionService(new UserDocumentsDataDirectoryProvider());
+                var subscriptions = subscriptionService.GetSubscriptions();
 
-                foreach (var episode in episodes)
+                foreach (var subscription in subscriptions)
                 {
-                    Console.WriteLine($"{tvSeriesItem.Title}:{episode.Date} {episode.Title}");
+                    var tvSeriesItem = tvSeries.FirstOrDefault(x => x.Id == subscription.OrfTvSeriesId);
+                    if (tvSeriesItem == null)
+                    {
+                        continue;
+                    }
+
+                    var episodes = await episodesProvider.GetEpisodesAsync(tvSeriesItem);
+
+                    _showEpisodes(tvSeriesItem, episodes);
                 }
+            }
+        }
+
+        private void _showEpisodes(OrfTvSeries series, IReadOnlyCollection<OrfTvSeriesEpisode> episodes)
+        {
+            Console.WriteLine($"{series.Title} ({series.Id})");
+            foreach (var episode in episodes)
+            {
+                Console.WriteLine($"\t{episode.Date:g} {episode.Title} ({episode.Channel}, {episode.Duration})");
+                if (!string.IsNullOrEmpty(episode.Description))
+                {
+                    Console.WriteLine($"\t\t{episode.Description}");
+                }
+                Console.WriteLine($"\t\t{episode.DownloadUrl}");
             }
         }
     }
