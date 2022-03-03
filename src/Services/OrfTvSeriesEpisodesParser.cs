@@ -1,39 +1,45 @@
 ﻿using HtmlAgilityPack;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AustrianTvScrapper.Services
 {
-    public static class OrfTvSeriesEpisodesParser
+    public class OrfTvSeriesEpisodesParser : IOrfTvSeriesEpisodesParser
     {
-        public static IReadOnlyCollection<OrfTvSeriesEpisode> Parse(HtmlDocument doc)
+        public IReadOnlyCollection<OrfTvSeriesEpisode> Parse(HtmlDocument doc)
         {
             var result = new List<OrfTvSeriesEpisode>();
 
-            var episodes = doc.DocumentNode.Descendants().Where(x => x.HasClass("b-teaser"));
+            var episodeNodes = doc.DocumentNode.Descendants().Where(x => x.HasClass("b-teaser"));
+            return episodeNodes.Select(_ParseEpisodeNode).ToList();
+        }
 
-            foreach (var x in episodes)
+        private OrfTvSeriesEpisode _ParseEpisodeNode(HtmlNode episodeNode)
+        {
+            var episode = new OrfTvSeriesEpisode();
+
+            var linkNode = episodeNode.Descendants().FirstOrDefault(x => x.HasClass("js-teaser-link"));
+            episode.Title = linkNode.Attributes["title"].Value;
+            episode.DownloadUrl = linkNode.Attributes["href"].Value;
+
+            var textContainerNode = linkNode.Descendants().FirstOrDefault(x => x.HasClass("text-container"));
+
+            _ReadNode(textContainerNode, "channel", x => episode.Channel = x.InnerText);
+            _ReadNode(textContainerNode, "description", x => episode.Description = x.InnerText);
+            _ReadNode(textContainerNode, "visible-duration", x => episode.Duration = x.InnerText);
+            _ReadNode(textContainerNode, "datetime", x => episode.Date = OrfTvSeriesEpisodeDateParser.Parse(x.Attributes["dateTime"].Value));
+
+            return episode;
+        }
+
+        private static void _ReadNode(HtmlNode parentNode, string className, Action<HtmlNode> readAction)
+        {
+            var node = parentNode.Descendants().FirstOrDefault(x => x.HasClass(className));
+            if (node != null)
             {
-                var linkNode = x.Descendants().FirstOrDefault(x => x.HasClass("js-teaser-link"));
-
-                var dateTimeNode = x.Descendants().FirstOrDefault(x => string.Compare(x.Name, "time", StringComparison.OrdinalIgnoreCase) == 0);
-                var dateTimeString = dateTimeNode.Attributes["datetime"].Value.Replace("CET", " ").Replace("CEST", " ");
-                var date = DateTime.ParseExact(dateTimeString, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
-
-                var orfEpisode = new OrfTvSeriesEpisode()
-                {
-                    Date = date,
-                    DownloadUrl = linkNode.Attributes["href"].Value,
-                    Title = linkNode.Attributes["title"].Value
-                };
-                result.Add(orfEpisode);
+                readAction(node);
             }
-
-            return result;
         }
     }
 }
