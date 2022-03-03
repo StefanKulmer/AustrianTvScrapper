@@ -23,6 +23,10 @@
     "showSeries": {
       "commandName": "Project",
       "commandLineArgs": "showSeries"
+    },
+    "showEpisodes": {
+      "commandName": "Project",
+      "commandLineArgs": "showEpisodes --all"
     }
   }
 }

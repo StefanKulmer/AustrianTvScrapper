@@ -1,7 +1,7 @@
-﻿namespace Microsoft.Extensions.DependencyInjection
-{
-    using AustrianTvScrapper.Services;
+﻿using AustrianTvScrapper.Services;
 
+namespace Microsoft.Extensions.DependencyInjection
+{
     /// <summary>
     /// Contains the collection extensions for adding the CLI commands.
     /// </summary>
@@ -18,6 +18,12 @@
             services.AddScoped<IUncachedService<IOrfTvSeriesScrapper>, OrfTvSeriesScrapper>();
             services.AddScoped<IOrfTvSeriesSnapshotService, OrfTvSeriesSnapshotService>();
             services.AddScoped<IDataDirectoryProvider, UserDocumentsDataDirectoryProvider>();
+
+            services.AddScoped<IHtmlDocumentLoader, HtmlDocumentLoader>();
+            services.AddScoped<IOrfTvSeriesUrlProvider, OrfTvSeriesUrlProvider>();
+            services.AddScoped<IOrfTvSeriesEpisodesParser, OrfTvSeriesEpisodesParser>();
+            services.AddScoped<IOrfTvSeriesEpisodesProvider, OrfTvSeriesEpisodesProvider>();
+
 
             return services;
         }

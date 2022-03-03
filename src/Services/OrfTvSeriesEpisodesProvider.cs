@@ -1,37 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using HtmlAgilityPack;
+using System.Threading.Tasks;
 
 namespace AustrianTvScrapper.Services
 {
-    public class OrfTvSeriesEpisodesProvider
+    public class OrfTvSeriesEpisodesProvider : IOrfTvSeriesEpisodesProvider
     {
-        public IEnumerable<OrfTvSeriesEpisode> GetAvailableEpisodes(OrfTvSeries tvSeries)
+        private readonly IOrfTvSeriesUrlProvider urlProvider;
+        private readonly IHtmlDocumentLoader htmlDocumentLoader;
+        private readonly IOrfTvSeriesEpisodesParser epsiodesParser;
+
+        public OrfTvSeriesEpisodesProvider(IOrfTvSeriesUrlProvider urlProvider, IHtmlDocumentLoader htmlDocumentLoader, IOrfTvSeriesEpisodesParser episodesParser)
         {
-            var episodesUrl = string.Format("{0}/episodes", tvSeries.Url);
-            var web = new HtmlWeb();
-            var doc = web.Load(episodesUrl);
+            this.urlProvider = urlProvider;
+            this.htmlDocumentLoader = htmlDocumentLoader;
+            this.epsiodesParser = episodesParser;
+        }
 
-            var episodes = doc.DocumentNode.Descendants().Where(x => x.HasClass("b-teaser"));
+        public async Task<IReadOnlyCollection<OrfTvSeriesEpisode>> GetEpisodesAsync(OrfTvSeries orfTvSeries)
+        {
+            ArgumentNullException.ThrowIfNull(orfTvSeries);
 
-            foreach (var x in episodes)
-            {
-                var linkNode = x.Descendants().FirstOrDefault(x => x.HasClass("js-teaser-link"));
-
-                var dateTimeNode = x.Descendants().FirstOrDefault(x => string.Compare(x.Name, "time", StringComparison.OrdinalIgnoreCase) == 0);
-                var dateTimeString = dateTimeNode.Attributes["datetime"].Value.Replace("CET", " ").Replace("CEST", " ");
-                var date = DateTime.ParseExact(dateTimeString, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
-
-                yield return new OrfTvSeriesEpisode()
-                {
-                    TvSeries = tvSeries,
-                    Date = date,
-                    DownloadUrl = linkNode.Attributes["href"].Value,
-                    Title = linkNode.Attributes["title"].Value
-                };
-            }
+            var url = urlProvider.GetEpisodesUrl(orfTvSeries);
+            var htmlDocument = await htmlDocumentLoader.LoadDocumentAsync(url);
+            return epsiodesParser.Parse(htmlDocument);
         }
     }
 }
