@@ -26,7 +26,7 @@ namespace AustrianTvScrapper.Services
             var textContainerNode = linkNode.Descendants().FirstOrDefault(x => x.HasClass("text-container"));
 
             _ReadNode(textContainerNode, "channel", x => episode.Channel = x.InnerText);
-            _ReadNode(textContainerNode, "description", x => episode.Description = x.InnerText);
+            _ReadNode(textContainerNode, "description", x => episode.Description = x.InnerText.Trim());
             _ReadNode(textContainerNode, "visible-duration", x => episode.Duration = x.InnerText);
             _ReadNode(textContainerNode, "datetime", x => episode.Date = OrfTvSeriesEpisodeDateParser.Parse(x.Attributes["dateTime"].Value));
 
