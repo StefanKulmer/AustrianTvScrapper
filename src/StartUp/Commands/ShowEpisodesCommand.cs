@@ -8,12 +8,12 @@ using System.Threading.Tasks;
 
 namespace AustrianTvScrapper.StartUp.Commands
 {
-    internal class ShowAvailableEpisodesCommand : Command
+    internal class ShowEpisodesCommand : Command
     {
         private readonly IOrfTvSeriesScrapper seriesScrapper;
         private readonly IOrfTvSeriesEpisodesProvider episodesProvider;
 
-        public ShowAvailableEpisodesCommand(IOrfTvSeriesScrapper seriesScrapper, IOrfTvSeriesEpisodesProvider episodesProvider)
+        public ShowEpisodesCommand(IOrfTvSeriesScrapper seriesScrapper, IOrfTvSeriesEpisodesProvider episodesProvider)
             : base("showEpisodes", "shows all epsiodes for a series")
         {
             this.seriesScrapper = seriesScrapper;
@@ -21,7 +21,7 @@ namespace AustrianTvScrapper.StartUp.Commands
 
             AddArgument(new Argument<string>("channel", getDefaultValue: () => "Orf"));
             AddOption(new Option<int?>(new[] { "--id", "-id" }, "id of series"));
-            AddOption(new Option(new[] { "--all", "-a" }, "ignoring all unknown, overrides id"));
+            AddOption(new Option(new[] { "--all", "-a" }, "show episodes for all subscribed series, overrides id"));
 
             Handler = CommandHandler.Create<string, int?, bool>(_HandleCommand);
         }
