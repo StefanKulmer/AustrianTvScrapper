@@ -24,7 +24,6 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddScoped<IOrfTvSeriesEpisodesParser, OrfTvSeriesEpisodesParser>();
             services.AddScoped<IOrfTvSeriesEpisodesProvider, OrfTvSeriesEpisodesProvider>();
 
-
             return services;
         }
     }
