@@ -15,8 +15,8 @@ namespace AustrianTvScrapper.Services
             {
                 return null;
             }
-
-            series.Title = teaserLink.GetAttributeValue("title", (string)null);
+            
+            series.Title = System.Net.WebUtility.HtmlDecode(teaserLink.GetAttributeValue("title", (string)null));
             var lastEpisodeUrl = teaserLink.GetAttributeValue("href", (string)null);
             series.Url = _GetBaseUrl(lastEpisodeUrl);
             series.Id = _GetIdFromUrl(lastEpisodeUrl);
@@ -51,7 +51,7 @@ namespace AustrianTvScrapper.Services
             var subElement = htmlNode.Descendants().Where(x => x.HasClass(@class)).FirstOrDefault();
             if (subElement != null)
             {
-                var text = subElement.InnerText;
+                var text = System.Net.WebUtility.HtmlDecode(subElement.InnerText);
                 return text.Trim();
             }
 
