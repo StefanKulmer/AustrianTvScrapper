@@ -27,6 +27,10 @@
     "showEpisodes": {
       "commandName": "Project",
       "commandLineArgs": "showEpisodes --all --newOnly"
+    },
+    "generateDownloadScript": {
+      "commandName": "Project",
+      "commandLineArgs": "generateDownloadScript -t script.bat -ti info.txt"
     }
   }
 }
