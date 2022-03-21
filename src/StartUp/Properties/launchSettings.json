@@ -30,7 +30,7 @@
     },
     "generateDownloadScript": {
       "commandName": "Project",
-      "commandLineArgs": "generateDownloadScript -t script.bat -ti info.txt"
+      "commandLineArgs": "generateDownloadScript -t script.ps1 -ti info.txt"
     }
   }
 }

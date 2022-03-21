@@ -30,13 +30,10 @@ namespace AustrianTvScrapper.StartUp.Commands
 
         private async Task _HandleCommand(string channel, string targetPath, string targetPathInfo)
         {
-            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            //var enc = Encoding.GetEncodings().Where(x => x.Name.Contains("852"));
-            //Console.WriteLine(string.Join(Environment.NewLine, enc.Select(x => x.Name)));
-
-            //using StreamWriter sw = new StreamWriter(File.Open(targetPath, FileMode.Create), Encoding.GetEncoding("ibm852"));
-            using StreamWriter sw = new StreamWriter(File.Open(targetPath, FileMode.Create), Encoding.GetEncoding(852));
-            sw.WriteLine(@"set dl=C:\Users\Stefan\Downloads\youtube-dl.exe --write-description --write-annotations --write-all-thumbnails --write-info-json");
+            using StreamWriter sw = new StreamWriter(File.Open(targetPath, FileMode.Create));
+            sw.WriteLine(@"$dl=""C:\Users\Stefan\Downloads\youtube-dl.exe""");
+            sw.WriteLine("$defaultParameters=\"--write-description --write-annotations --write-all-thumbnails --write-info-json\"");
+            sw.WriteLine();
 
             using StreamWriter infoWriter =
                 string.IsNullOrEmpty(targetPathInfo) ?
@@ -47,6 +44,11 @@ namespace AustrianTvScrapper.StartUp.Commands
             var subscriptions = subscriptionService.GetSubscriptions();
 
             var tvSeries = seriesScrapper.GetListOfTvSeries();
+
+            //Console.WriteLine($"subscriptions before sorting: {subscriptions.Count}");
+            //subscriptions = subscriptions.Where(s => tvSeries.Any(t => t.Id == s.OrfTvSeriesId)).OrderBy(s => tvSeries.FirstOrDefault(t => t.Id == s.OrfTvSeriesId)?.Title).ToList();
+            //Console.WriteLine($"subscriptions after sorting: {subscriptions.Count}");
+            //return;
 
             foreach (var subscription in subscriptions)
             {
@@ -67,11 +69,8 @@ namespace AustrianTvScrapper.StartUp.Commands
             Console.WriteLine($"{series.Title} ({series.Id})");
             foreach (var episode in episodes)
             {
-                string directory = null;
-
                 var directoryProvider = new OrfTvSeriesEpisodeDirectoryProvider();
-                directory = directoryProvider.GetDirectory(subscription, series, episode);
-
+                string directory = directoryProvider.GetDirectory(subscription, series, episode);
                 if (Directory.Exists(directory))
                 {
                     continue;
@@ -83,19 +82,32 @@ namespace AustrianTvScrapper.StartUp.Commands
                 if (!string.IsNullOrEmpty(episode.Description))
                 {
                     Console.WriteLine($"\t\t{episode.Description}");
-
-                    scriptWriter.WriteLine($"set theDir=\"{directory}\"");
-                    scriptWriter.WriteLine("md \"%theDir%\"");
-                    scriptWriter.WriteLine("cd /d %theDir%");
-                    scriptWriter.WriteLine($"%dl% {episode.DownloadUrl}");
-                    scriptWriter.WriteLine();
-
-                    infoWriter.WriteLine($"{series.Title}: {episode.Title} ({episode.Date:g}) - {episode.Duration}");
-                    if (!string.IsNullOrEmpty(episode.Description))
-                    {
-                        infoWriter.WriteLine($"\t{_FormatDescription(episode.Description)}");
-                    }
                 }
+                var directoryBackup = directory;
+                var needsShortPath = false;
+                if ((directory.Length + episode.Title.Length) > 150)
+                {
+                    directory = Path.Combine(Path.GetDirectoryName(directory), Path.GetFileName(directory).Substring(0, 10));
+                    needsShortPath = true;
+                }
+
+                scriptWriter.WriteLine($"New-Item \"{directory}\" -ItemType \"directory\"");
+                scriptWriter.WriteLine($"Start-Process -FilePath $dl -WorkingDirectory \"{directory}\" -ArgumentList \"$defaultParameters {episode.DownloadUrl}\" -NoNewWindow -Wait");
+
+                if (needsShortPath)
+                {
+                    scriptWriter.WriteLine($"Rename-Item \"{directory}\" \"{directoryBackup}\"");
+                    directory = directoryBackup;
+                }
+
+                scriptWriter.WriteLine();
+
+                infoWriter.WriteLine($"{series.Title}: {episode.Title} ({episode.Date:g}, {episode.Channel}) - {episode.Duration}");
+                if (!string.IsNullOrEmpty(episode.Description))
+                {
+                    infoWriter.WriteLine($"\t{_FormatDescription(episode.Description)}");
+                }
+                infoWriter.WriteLine($"\t{directory}");
             }
         }
 

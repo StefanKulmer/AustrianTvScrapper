@@ -24,6 +24,7 @@ namespace AustrianTvScrapper.Services
                 }
             }
             episodeDirectory = episodeDirectory.Replace("#TITLE", title, StringComparison.OrdinalIgnoreCase);
+            episodeDirectory = episodeDirectory.Replace("#SERIES", series.Title, StringComparison.OrdinalIgnoreCase);
 
             var seriesDirectory = subscription.DownloadSubDirectory ?? DefaultSubDirectory;
             seriesDirectory = seriesDirectory.Replace("#NAME", subscription.Name ?? series.Title, StringComparison.OrdinalIgnoreCase);
