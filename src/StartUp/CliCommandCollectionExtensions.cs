@@ -4,6 +4,7 @@
 
 namespace Microsoft.Extensions.DependencyInjection
 {
+    using AustrianTvScrapper.Services;
     using Microsoft.Extensions.Configuration;
     using System;
     using System.Collections.Generic;
@@ -46,6 +47,13 @@ namespace Microsoft.Extensions.DependencyInjection
                 return
                    sp.GetRequiredService<IConfiguration>().GetSection("Greet").Get<GreetOptions>()
                    ?? throw new ArgumentException("Greeting configuration cannot be missing.");
+            });
+
+            services.AddSingleton(sp =>
+            {
+                return
+                   sp.GetRequiredService<IConfiguration>().GetSection("BaseDirectories").Get<BaseDirectoriesConfiguration>()
+                   ?? throw new ArgumentException("BaseDirectoriesConfiguration configuration cannot be missing.");
             });
 
             return services;

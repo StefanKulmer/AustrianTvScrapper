@@ -4,15 +4,54 @@ using System.Linq;
 
 namespace AustrianTvScrapper.Services
 {
-    public class OrfTvSeriesEpisodeDirectoryProvider
+    public class OrfTvSeriesEpisodeDirectoryProvider : IOrfTvSeriesEpisodeDirectoryProvider
     {
-        private const string BasePath = @"L:\03 Movies\Tv";
-        private const string DefaultEpisodeNameFormat = "#Date #Title";
-        private const string DefaultSubDirectory = "#Year\\#Name";
+        private readonly BaseDirectoriesConfiguration baseDirectoriesConfiguration;
 
-        public string GetDirectory(OrfTvSeriesSubscription subscription, OrfTvSeries series, OrfTvSeriesEpisode episode)
+        public OrfTvSeriesEpisodeDirectoryProvider(BaseDirectoriesConfiguration baseDirectoriesConfiguration)
         {
-            var episodeNameFormat = subscription.EpisodeNameFormat ?? DefaultEpisodeNameFormat;
+            this.baseDirectoriesConfiguration = baseDirectoriesConfiguration;
+        }
+
+        public DirectoryInfo GetDirectory(OrfTvSeriesSubscription subscription, OrfTvSeries series, OrfTvSeriesEpisode episode)
+        {
+            ArgumentNullException.ThrowIfNull(subscription);
+            ArgumentNullException.ThrowIfNull(series);
+            ArgumentNullException.ThrowIfNull(episode);
+
+            var baseDirectory = _GetBasePath();
+            var seriesDirectoryPart = _GetSeriesPart(subscription, series, episode);
+            var episodePart = _GetEpisodePart(subscription, series, episode);
+
+            var subDirectory = Path.Combine(seriesDirectoryPart, episodePart);
+            var sanitizedSubDirectory = _SanitizeDirectory(subDirectory);
+
+            var directory = Path.Combine(baseDirectory, sanitizedSubDirectory);
+
+            return new DirectoryInfo(directory);
+        }
+
+        private string _GetBasePath()
+        {
+            return baseDirectoriesConfiguration.BasePath;
+        }
+
+        private string _GetSeriesPart(OrfTvSeriesSubscription subscription, OrfTvSeries series, OrfTvSeriesEpisode episode)
+        {
+            var seriesDirectory = subscription.DownloadSubDirectory ?? baseDirectoriesConfiguration.DefaultSubDirectory;
+
+            var nameInDirectory = string.IsNullOrEmpty(subscription.Name)
+                ? series.Title
+                : subscription.Name;
+            seriesDirectory = seriesDirectory.Replace("#NAME", nameInDirectory, StringComparison.OrdinalIgnoreCase);
+            seriesDirectory = seriesDirectory.Replace("#YEAR", episode.Date.Year.ToString(), StringComparison.OrdinalIgnoreCase);
+
+            return seriesDirectory;
+        }
+
+        private string _GetEpisodePart(OrfTvSeriesSubscription subscription, OrfTvSeries series, OrfTvSeriesEpisode episode)
+        {
+            var episodeNameFormat = subscription.EpisodeNameFormat ?? baseDirectoriesConfiguration.DefaultEpisodeNameFormat;
             var episodeDirectory = episodeNameFormat.Replace("#DATE", string.Format("{0:yyyy-MM-dd}", episode.Date), StringComparison.OrdinalIgnoreCase);
 
             var title = episode.Title;
@@ -26,14 +65,20 @@ namespace AustrianTvScrapper.Services
             episodeDirectory = episodeDirectory.Replace("#TITLE", title, StringComparison.OrdinalIgnoreCase);
             episodeDirectory = episodeDirectory.Replace("#SERIES", series.Title, StringComparison.OrdinalIgnoreCase);
 
-            var seriesDirectory = subscription.DownloadSubDirectory ?? DefaultSubDirectory;
-            seriesDirectory = seriesDirectory.Replace("#NAME", subscription.Name ?? series.Title, StringComparison.OrdinalIgnoreCase);
-            seriesDirectory = seriesDirectory.Replace("#YEAR", episode.Date.Year.ToString(), StringComparison.OrdinalIgnoreCase);
-
-            var subDirectory = Path.Combine(seriesDirectory, episodeDirectory);
-            subDirectory = string.Join(@"\", subDirectory.Split(@"\", StringSplitOptions.RemoveEmptyEntries).Select(x => DirectorySanitizer.Sanitize(x)));
-
-            return Path.Combine(BasePath, subDirectory);
+            return episodeDirectory;
         }
+
+        private string _GetFullDirectory(string baseDirectory, string seriesDirectoryPart, string episodePart)
+        {
+            return Path.Combine(baseDirectory, seriesDirectoryPart, episodePart);
+        }
+
+
+        private string _SanitizeDirectory(string directory)
+        {
+            return string.Join(Path.DirectorySeparatorChar, directory.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries).Select(x => DirectorySanitizer.Sanitize(x)));
+        }
+
+       
     }
 }

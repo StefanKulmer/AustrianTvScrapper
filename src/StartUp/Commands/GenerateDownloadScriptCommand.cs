@@ -14,13 +14,14 @@ namespace AustrianTvScrapper.StartUp.Commands
     {
         private readonly IOrfTvSeriesScrapper seriesScrapper;
         private readonly IOrfTvSeriesEpisodesProvider episodesProvider;
+        private readonly IOrfTvSeriesEpisodeDirectoryProvider directoryProvider;
 
-        public GenerateDownloadScriptCommand(IOrfTvSeriesScrapper seriesScrapper, IOrfTvSeriesEpisodesProvider episodesProvider)
+        public GenerateDownloadScriptCommand(IOrfTvSeriesScrapper seriesScrapper, IOrfTvSeriesEpisodesProvider episodesProvider, IOrfTvSeriesEpisodeDirectoryProvider directoryProvider)
             : base("generateDownloadScript", "generates a download script for episodes of subscribed series")
         {
             this.seriesScrapper = seriesScrapper;
             this.episodesProvider = episodesProvider;
-
+            this.directoryProvider = directoryProvider;
             AddArgument(new Argument<string>("channel", getDefaultValue: () => "Orf"));
             AddOption(new Option<string>(new[] { "--targetPath", "-t" }, "target path of script"));
             AddOption(new Option<string>(new[] { "--targetPathInfo", "-ti" }, "target path of info file"));
@@ -69,9 +70,8 @@ namespace AustrianTvScrapper.StartUp.Commands
             Console.WriteLine($"{series.Title} ({series.Id})");
             foreach (var episode in episodes)
             {
-                var directoryProvider = new OrfTvSeriesEpisodeDirectoryProvider();
-                string directory = directoryProvider.GetDirectory(subscription, series, episode);
-                if (Directory.Exists(directory))
+                var directory = directoryProvider.GetDirectory(subscription, series, episode);
+                if (directory.Exists)
                 {
                     continue;
                 }
@@ -83,20 +83,20 @@ namespace AustrianTvScrapper.StartUp.Commands
                 {
                     Console.WriteLine($"\t\t{episode.Description}");
                 }
-                var directoryBackup = directory;
+                var directoryBackup = new DirectoryInfo(directory.FullName);
                 var needsShortPath = false;
-                if ((directory.Length + episode.Title.Length) > 150)
+                if ((directory.FullName.Length + episode.Title.Length) > 150)
                 {
-                    directory = Path.Combine(Path.GetDirectoryName(directory), Path.GetFileName(directory).Substring(0, 10));
+                    directory = new DirectoryInfo(Path.Combine(directory.Parent.FullName, directory.Name.Substring(0, 10)));
                     needsShortPath = true;
                 }
 
-                scriptWriter.WriteLine($"New-Item \"{directory}\" -ItemType \"directory\"");
-                scriptWriter.WriteLine($"Start-Process -FilePath $dl -WorkingDirectory \"{directory}\" -ArgumentList \"$defaultParameters {episode.DownloadUrl}\" -NoNewWindow -Wait");
+                scriptWriter.WriteLine($"New-Item \"{directory.FullName}\" -ItemType \"directory\"");
+                scriptWriter.WriteLine($"Start-Process -FilePath $dl -WorkingDirectory \"{directory.FullName}\" -ArgumentList \"$defaultParameters {episode.DownloadUrl}\" -NoNewWindow -Wait");
 
                 if (needsShortPath)
                 {
-                    scriptWriter.WriteLine($"Rename-Item \"{directory}\" \"{directoryBackup}\"");
+                    scriptWriter.WriteLine($"Rename-Item \"{directory.FullName}\" \"{directoryBackup}\"");
                     directory = directoryBackup;
                 }
 
@@ -107,7 +107,7 @@ namespace AustrianTvScrapper.StartUp.Commands
                 {
                     infoWriter.WriteLine($"\t{_FormatDescription(episode.Description)}");
                 }
-                infoWriter.WriteLine($"\t{directory}");
+                infoWriter.WriteLine($"\t{directory.FullName}");
             }
         }
 

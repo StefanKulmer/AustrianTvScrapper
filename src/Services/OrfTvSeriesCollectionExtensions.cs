@@ -23,6 +23,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddScoped<IOrfTvSeriesUrlProvider, OrfTvSeriesUrlProvider>();
             services.AddScoped<IOrfTvSeriesEpisodesParser, OrfTvSeriesEpisodesParser>();
             services.AddScoped<IOrfTvSeriesEpisodesProvider, OrfTvSeriesEpisodesProvider>();
+            services.AddScoped<IOrfTvSeriesEpisodeDirectoryProvider, OrfTvSeriesEpisodeDirectoryProvider>();
 
             return services;
         }

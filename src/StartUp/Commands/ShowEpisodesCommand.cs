@@ -13,13 +13,14 @@ namespace AustrianTvScrapper.StartUp.Commands
     {
         private readonly IOrfTvSeriesScrapper seriesScrapper;
         private readonly IOrfTvSeriesEpisodesProvider episodesProvider;
+        private readonly IOrfTvSeriesEpisodeDirectoryProvider directoryProvider;
 
-        public ShowEpisodesCommand(IOrfTvSeriesScrapper seriesScrapper, IOrfTvSeriesEpisodesProvider episodesProvider)
+        public ShowEpisodesCommand(IOrfTvSeriesScrapper seriesScrapper, IOrfTvSeriesEpisodesProvider episodesProvider, IOrfTvSeriesEpisodeDirectoryProvider directoryProvider)
             : base("showEpisodes", "shows all epsiodes for a series")
         {
             this.seriesScrapper = seriesScrapper;
             this.episodesProvider = episodesProvider;
-
+            this.directoryProvider = directoryProvider;
             AddArgument(new Argument<string>("channel", getDefaultValue: () => "Orf"));
             AddOption(new Option<int?>(new[] { "--id", "-id" }, "id of series"));
             AddOption(new Option(new[] { "--all", "-a" }, "show episodes for all subscribed series, overrides id"));
@@ -69,14 +70,13 @@ namespace AustrianTvScrapper.StartUp.Commands
             Console.WriteLine($"{series.Title} ({series.Id})");
             foreach (var episode in episodes)
             {
-                string directory = null;
+                DirectoryInfo directory = null;
                 var hasToWrite = true;
                 if (subscription != null)
                 {
-                    var directoryProvider = new OrfTvSeriesEpisodeDirectoryProvider();
                     directory = directoryProvider.GetDirectory(subscription, series, episode);
 
-                    if (newOnly && Directory.Exists(directory))
+                    if (newOnly && directory.Exists)
                     {
                         hasToWrite = false;
                     }
@@ -93,7 +93,7 @@ namespace AustrianTvScrapper.StartUp.Commands
                 if (subscription != null)
                 {
                     Console.Write("\t\t");
-                    if (Directory.Exists(directory))
+                    if (directory.Exists)
                     {
                         Console.Write("= ");
                     }
@@ -101,7 +101,7 @@ namespace AustrianTvScrapper.StartUp.Commands
                     {
                         Console.Write("* ");
                     }
-                    Console.WriteLine(directory);
+                    Console.WriteLine(directory.FullName);
                 }
 
                 if (!string.IsNullOrEmpty(episode.Description))
