@@ -117,5 +117,20 @@ namespace AustrianTvScrapper.Services
             Assert.NotNull(directoryInfo);
             Assert.Equal(@"C:\2013\hicks\2013-03-13 some", directoryInfo.FullName);
         }
+
+        [Fact]
+        public void GetDirectory_EpisodeNameRemovalsDefined_AreReplacedInEpisodeDirectoryPart()
+        {
+            subscription.EpisodeNameRemovals = new[] { "uni", "versum" };
+            subscription.Name = "uni versum";
+            episode.Title = "uni versum monkeys";
+
+            var sut = new OrfTvSeriesEpisodeDirectoryProvider(configuration);
+
+            var directoryInfo = sut.GetDirectory(subscription, series, episode);
+
+            Assert.NotNull(directoryInfo);
+            Assert.Equal(@"C:\2022\uni versum\2022-02-22 monkeys", directoryInfo.FullName);
+        }
     }
 }

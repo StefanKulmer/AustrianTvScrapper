@@ -53,32 +53,32 @@ namespace AustrianTvScrapper.Services
         {
             var episodeNameFormat = subscription.EpisodeNameFormat ?? baseDirectoriesConfiguration.DefaultEpisodeNameFormat;
             var episodeDirectory = episodeNameFormat.Replace("#DATE", string.Format("{0:yyyy-MM-dd}", episode.Date), StringComparison.OrdinalIgnoreCase);
-
-            var title = episode.Title;
-            if (subscription.EpisodeNameRemovals != null)
-            {
-                foreach (var replace in subscription.EpisodeNameRemovals)
-                {
-                    title = title.Replace(replace, "", StringComparison.OrdinalIgnoreCase);
-                }
-            }
+            var title = _RemoveTextInTitle(episode.Title, subscription.EpisodeNameRemovals);
             episodeDirectory = episodeDirectory.Replace("#TITLE", title, StringComparison.OrdinalIgnoreCase);
             episodeDirectory = episodeDirectory.Replace("#SERIES", series.Title, StringComparison.OrdinalIgnoreCase);
 
             return episodeDirectory;
         }
 
-        private string _GetFullDirectory(string baseDirectory, string seriesDirectoryPart, string episodePart)
+        private string _RemoveTextInTitle(string title, string[] episodeNameRemovals)
         {
-            return Path.Combine(baseDirectory, seriesDirectoryPart, episodePart);
-        }
+            if (episodeNameRemovals == null || episodeNameRemovals.Length == 0)
+                return title;
 
+            foreach (var replace in episodeNameRemovals)
+            {
+                title = title.Replace($" {replace} ", string.Empty, StringComparison.OrdinalIgnoreCase);
+                title = title.Replace($"{replace} ", string.Empty, StringComparison.OrdinalIgnoreCase);
+                title = title.Replace($" {replace}", string.Empty, StringComparison.OrdinalIgnoreCase);
+                title = title.Replace(replace, string.Empty, StringComparison.OrdinalIgnoreCase);
+            }
+
+            return title;
+        }
 
         private string _SanitizeDirectory(string directory)
         {
             return string.Join(Path.DirectorySeparatorChar, directory.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries).Select(x => DirectorySanitizer.Sanitize(x)));
         }
-
-       
     }
 }
