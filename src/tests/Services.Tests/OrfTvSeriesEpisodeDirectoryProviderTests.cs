@@ -5,14 +5,31 @@ namespace AustrianTvScrapper.Services
 {
     public class OrfTvSeriesEpisodeDirectoryProviderTests
     {
+        OrfTvSeriesSubscription subscription = new OrfTvSeriesSubscription
+        {
+            Name = "hicks"
+        };
+
+        BaseDirectoriesConfiguration configuration = new BaseDirectoriesConfiguration
+        {
+            BasePath = @"C:\"
+        };
+
+        OrfTvSeries series = new OrfTvSeries
+        {
+            Title = "bla"
+        };
+
+        OrfTvSeriesEpisode episode = new OrfTvSeriesEpisode
+        {
+            Date = new DateTime(2022, 02, 22),
+            Title = "some"
+        };
+
         [Fact]
         public void GetDirectory_SubscriptionIsNull_ThrowsException()
         {
-            var configuration = new BaseDirectoriesConfiguration();
             var sut = new OrfTvSeriesEpisodeDirectoryProvider(configuration);
-
-            var series = new OrfTvSeries();
-            var episode = new OrfTvSeriesEpisode();
 
             var ex = Assert.Throws<ArgumentNullException>(() => _ = sut.GetDirectory(null, series, episode));
             Assert.Equal("subscription", ex.ParamName);
@@ -21,11 +38,7 @@ namespace AustrianTvScrapper.Services
         [Fact]
         public void GetDirectory_SeriesIsNull_ThrowsException()
         {
-            var configuration = new BaseDirectoriesConfiguration();
             var sut = new OrfTvSeriesEpisodeDirectoryProvider(configuration);
-
-            var subscription = new OrfTvSeriesSubscription();
-            var episode = new OrfTvSeriesEpisode();
 
             var ex = Assert.Throws<ArgumentNullException>(() => _ = sut.GetDirectory(subscription, null, episode));
             Assert.Equal("series", ex.ParamName);
@@ -34,10 +47,6 @@ namespace AustrianTvScrapper.Services
         [Fact]
         public void GetDirectory_EpisodeIsNull_ThrowsException()
         {
-            var configuration = new BaseDirectoriesConfiguration();
-            var subscription = new OrfTvSeriesSubscription();
-            var series = new OrfTvSeries();
-
             var sut = new OrfTvSeriesEpisodeDirectoryProvider(configuration);
 
             var ex = Assert.Throws<ArgumentNullException>(() => _ = sut.GetDirectory(subscription, series, null));
@@ -47,27 +56,6 @@ namespace AustrianTvScrapper.Services
         [Fact]
         public void GetDirectory()
         {
-            var subscription = new OrfTvSeriesSubscription
-            {
-                Name = "hicks"
-            };
-
-            var configuration = new BaseDirectoriesConfiguration
-            {
-                BasePath = @"C:\"
-            };
-
-            var series = new OrfTvSeries
-            {
-                Title = "bla"
-            };
-
-            var episode = new OrfTvSeriesEpisode
-            {
-                Date = new DateTime(2022, 02, 22),
-                Title = "some"
-            };
-
             var sut = new OrfTvSeriesEpisodeDirectoryProvider(configuration);
 
             var directoryInfo = sut.GetDirectory(subscription, series, episode);
@@ -81,22 +69,7 @@ namespace AustrianTvScrapper.Services
         [InlineData(':')]
         public void GetDirectory_WithSpecialCharacterInEpisodeTitle_ReplacesSpecialCharacter(char invalidChar)
         {
-            var subscription = new OrfTvSeriesSubscription
-            {
-                Name = "hicks"
-            };
-
-            var configuration = new BaseDirectoriesConfiguration
-            {
-                BasePath = @"C:\"
-            };
-
-            var series = new OrfTvSeries
-            {
-                Title = "bla"
-            };
-
-            var episode = new OrfTvSeriesEpisode
+            episode = new OrfTvSeriesEpisode
             {
                 Date = new DateTime(2022, 02, 22),
                 Title = "some" + invalidChar
@@ -115,25 +88,9 @@ namespace AustrianTvScrapper.Services
         [InlineData("")]
         public void GetDirectory_SubscriptionHasNoName_UsesSeriesName(string subscriptionName)
         {
-            var subscription = new OrfTvSeriesSubscription
+            subscription = new OrfTvSeriesSubscription
             {
                 Name = subscriptionName
-            };
-
-            var configuration = new BaseDirectoriesConfiguration
-            {
-                BasePath = @"C:\"
-            };
-
-            var series = new OrfTvSeries
-            {
-                Title = "bla"
-            };
-
-            var episode = new OrfTvSeriesEpisode
-            {
-                Date = new DateTime(2022, 02, 22),
-                Title = "some"
             };
 
             var sut = new OrfTvSeriesEpisodeDirectoryProvider(configuration);
@@ -147,22 +104,7 @@ namespace AustrianTvScrapper.Services
         [Fact]
         public void GetDirectory_EpisodeYearIsNotCurrentYear_UsesEpisodeYear()
         {
-            var subscription = new OrfTvSeriesSubscription
-            {
-                Name = "hicks"
-            };
-
-            var configuration = new BaseDirectoriesConfiguration
-            {
-                BasePath = @"C:\"
-            };
-
-            var series = new OrfTvSeries
-            {
-                Title = "bla"
-            };
-
-            var episode = new OrfTvSeriesEpisode
+            episode = new OrfTvSeriesEpisode
             {
                 Date = new DateTime(2013, 3, 13),
                 Title = "some"
