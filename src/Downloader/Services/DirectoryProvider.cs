@@ -1,9 +1,11 @@
-﻿using System;
+﻿using Microsoft.Extensions.Options;
+using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
 
 namespace Downloader.Services
 {
@@ -18,23 +20,30 @@ namespace Downloader.Services
     public class DirectoryProvider : IDirectoryProvider
     {
         private readonly IFileSystem fileSystem;
+        private readonly DirectoryOptions directoryOptions;
 
-        public DirectoryProvider(IFileSystem fileSystem)
+        public DirectoryProvider(IFileSystem fileSystem, IOptions<DirectoryOptions> directoryOptions)
         {
             if (fileSystem is null)
             {
                 throw new ArgumentNullException(nameof(fileSystem));
             }
-            
+
+            if (directoryOptions is null)
+            {
+                throw new ArgumentNullException(nameof(directoryOptions));
+            }
+
             this.fileSystem = fileSystem;
+            this.directoryOptions = directoryOptions.Value;
         }
 
-        public IDirectoryInfo Queue => fileSystem.DirectoryInfo.New(@"C:\Users\Stefan\Documents\AustrianTvScrapper\Queue");
+        public IDirectoryInfo Queue => fileSystem.DirectoryInfo.New(Path.Combine(directoryOptions.DownloadListDirectory, "Queue"));
 
-        public IDirectoryInfo Succeeded => fileSystem.DirectoryInfo.New(@"C:\Users\Stefan\Documents\AustrianTvScrapper\Succeeded");
+        public IDirectoryInfo Succeeded => fileSystem.DirectoryInfo.New(Path.Combine(directoryOptions.DownloadListDirectory, "Succeeded"));
 
-        public IDirectoryInfo Failed => fileSystem.DirectoryInfo.New(@"C:\Users\Stefan\Documents\AustrianTvScrapper\Failed");
+        public IDirectoryInfo Failed => fileSystem.DirectoryInfo.New(Path.Combine(directoryOptions.DownloadListDirectory, "Failed"));
 
-        public IDirectoryInfo DownloadDirectory => fileSystem.DirectoryInfo.New(@"I:\03 Movies\Tv\2024-temp\downloads");
+        public IDirectoryInfo DownloadDirectory => fileSystem.DirectoryInfo.New(directoryOptions.DownloadDirectory);
     }
 }

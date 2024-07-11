@@ -12,7 +12,11 @@ namespace SystemCommandLine.Demo
     using Microsoft.Extensions.DependencyInjection;
     using Subscription;
     using DownloadListCreator;
-
+    using System.IO;
+    using System;
+    using System.Text.Json;
+    using Downloader.Services;
+    using Microsoft.Extensions.Options;
     internal static class Program
     {
         /// <summary>
@@ -44,12 +48,31 @@ namespace SystemCommandLine.Demo
 
         private static ServiceProvider BuildServiceProvider()
         {
-            var services = new ServiceCollection();
-            IConfigurationRoot config = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json")
+            string userDataDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string appDataDir = Path.Combine(userDataDir, "AustrianTvScrapper");
+            string optionsFilePath = Path.Combine(appDataDir, "appsettings.json");
+
+            if (!File.Exists(optionsFilePath))
+            {
+                Console.WriteLine("Options file not found. Creating default options file.");
+                Directory.CreateDirectory(appDataDir);
+                var defaultOptions = new DirectoryOptions { 
+                    SubscriptionsDirectory = appDataDir,
+                    DownloadListDirectory = appDataDir,
+                    DownloadDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "AustrianTvScrapper")
+                };
+                File.WriteAllText(optionsFilePath, JsonSerializer.Serialize(defaultOptions));
+            }
+
+            // Build configuration
+            var config = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile(optionsFilePath)
                 .Build();
 
-            services.AddSingleton<IConfiguration>(config);
+            var services = new ServiceCollection();
+
+            services.Configure<DirectoryOptions>(config.GetSection("DirectoryOptions"));
             services.AddCliCommands();
             services.AddOrfTvSeriesCommands();
             services.AddSubscription();

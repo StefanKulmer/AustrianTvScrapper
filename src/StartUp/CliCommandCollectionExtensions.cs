@@ -41,13 +41,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 services.AddSingleton(commandType, command);
             }
 
-            services.AddSingleton(sp =>
-            {
-                return
-                   sp.GetRequiredService<IConfiguration>().GetSection("Greet").Get<GreetOptions>()
-                   ?? throw new ArgumentException("Greeting configuration cannot be missing.");
-            });
-
             return services;
         }
     }
