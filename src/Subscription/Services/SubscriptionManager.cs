@@ -15,12 +15,17 @@
         public void AddSubscription(Model.Subscription subscription)
         {
             var allSubscriptions = subscriptionPersistenceService.LoadAll(fileName);
-            if (!allSubscriptions.Any(s => s.ProfileId == subscription.ProfileId))
+            if (allSubscriptions.Any(s => s.ProfileId == subscription.ProfileId))
             {
                 return;
             }
-
-            var maxId = allSubscriptions.Max(s => s.Id);
+            
+            int maxId = 0;
+            if (allSubscriptions.Count > 0)
+            {
+                maxId = allSubscriptions.Max(s => s.Id);
+            }
+            
             subscription.Id = maxId + 1;
 
             allSubscriptions.Add(subscription);

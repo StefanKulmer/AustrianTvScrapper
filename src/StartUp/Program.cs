@@ -10,6 +10,8 @@ namespace SystemCommandLine.Demo
     using System.Threading.Tasks;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
+    using Subscription;
+    using DownloadListCreator;
 
     internal static class Program
     {
@@ -50,6 +52,8 @@ namespace SystemCommandLine.Demo
             services.AddSingleton<IConfiguration>(config);
             services.AddCliCommands();
             services.AddOrfTvSeriesCommands();
+            services.AddSubscription();
+            services.AddDownloadListCreator();
 
             return services.BuildServiceProvider();
         }

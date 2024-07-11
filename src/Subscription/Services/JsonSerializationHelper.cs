@@ -13,6 +13,9 @@ namespace Subscription.Services
 
         public static T? Deserialize<T>(IFileInfo fileInfo)
         {
+            if (!fileInfo.Exists)
+                return default;
+
             using var stream = fileInfo.OpenRead();
             return JsonSerializer.Deserialize<T>(stream, GetSerializerOptions());
         }

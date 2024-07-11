@@ -22,8 +22,8 @@ namespace AustrianTvScrapper.StartUp.Commands
 
             AddArgument(new Argument<string>("channel", getDefaultValue: () => "Orf"));
             AddOption(new Option<int?>(new[] { "--id", "-id" }, "id of series"));
-            AddOption(new Option(new[] { "--all", "-a" }, "show episodes for all subscribed series, overrides id"));
-            AddOption(new Option(new[] { "--newOnly", "-no" }, "shows only new episodes"));
+            AddOption(new Option<bool>(new[] { "--all", "-a" }, "show episodes for all subscribed series, overrides id"));
+            AddOption(new Option<bool>(new[] { "--newOnly", "-no" }, "shows only new episodes"));
 
             Handler = CommandHandler.Create<string, int?, bool, bool>(_HandleCommand);
         }

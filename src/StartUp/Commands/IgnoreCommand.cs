@@ -1,4 +1,6 @@
 ﻿using AustrianTvScrapper.Services;
+using OrfDataProvider.Services;
+using Subscription.Services;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
@@ -10,92 +12,46 @@ namespace AustrianTvScrapper.StartUp.Commands
     internal class IgnoreCommand : Command
     {
         private readonly IOrfTvSeriesScrapper orfTvSeriesScrapper;
+        private readonly IUnSubscriptionManager unSubscriptionManager;
+        private readonly IOrfDataProvider orfDataProvider;
 
-        public IgnoreCommand(IOrfTvSeriesScrapper orfTvSeriesScrapper)
+        public IgnoreCommand(Subscription.Services.IUnSubscriptionManager unSubscriptionManager, IOrfDataProvider orfDataProvider)
             : base("ignore", "ignores a series")
         {
-            this.orfTvSeriesScrapper = orfTvSeriesScrapper;
+            AddOption(new Option<int>(new[] { "--id", "-id" }, "id of TV show"));
 
-            AddArgument(new Argument<string>("channel", getDefaultValue: () => "Orf"));
-            AddOption(new Option<int?>(new[] { "--id", "-id" }, "id of series"));
-            AddOption(new Option(new[] { "--all", "-a" }, "ignoring all unknown, overrides id"));
+            this.unSubscriptionManager = unSubscriptionManager;
+            this.orfDataProvider = orfDataProvider;
 
-            Handler = CommandHandler.Create<string, int?, bool>(_HandleCommand);
+            Handler = CommandHandler.Create<int>(_HandleCommand);
         }
 
-        private void _HandleCommand(string channel, int? id, bool all)
+        private void _HandleCommand(int id)
         {
-            var tvSeries = orfTvSeriesScrapper.GetListOfTvSeries();
-
-            var unsubscribedService = new OrfTvSeriesSubscriptionService(
-                new UserDocumentsDataDirectoryProvider(),
-                $"OrfTvSeriesUnsubscribed.json"
-                );
-            var unsubscribed = unsubscribedService.GetSubscriptions();
-
-            if (!all)
+            var profile = orfDataProvider.GetProfile(id).Result;
+            if (profile == null)
             {
-                var series = tvSeries.FirstOrDefault(s => s.Id == id.ToString());
-                if (series == null)
-                {
-                    Console.WriteLine($"series with id {id} doesn't exist");
-                    return;
-                }
-
-                if (unsubscribed.Any(s => s.OrfTvSeriesId == id.ToString()))
-                {
-                    Console.WriteLine($"series with id {id} is already ignored");
-                    return;
-                }
-
-                unsubscribedService.AddSubscription(OrfTvSeriesSubscription.CreateForTvSeries(series));
+                Console.WriteLine($"profile {id} doesn't exist.");
+                return;
             }
-            else
+
+            var subscriptions = unSubscriptionManager.GetSubscriptions();
+            if (subscriptions.Any(s => s.ProfileId == id))
             {
-                var subscriptionService = new OrfTvSeriesSubscriptionService(new UserDocumentsDataDirectoryProvider());
-                var subscriptions = subscriptionService.GetSubscriptions();
-
-                var total = 0;
-                var undefinedItems = new List<OrfTvSeriesSubscription>();
-                foreach (var item in tvSeries)
-                {
-                    var isSubscribed = _HasSubscription(item, subscriptions);
-                    if (isSubscribed)
-                        continue;
-
-                    var isUnsubscribed = _HasSubscription(item, unsubscribed);
-                    if (isUnsubscribed)
-                        continue;
-
-                    var undefined = _CreateSubscription(item);
-                    undefinedItems.Add(undefined);
-
-                    Console.WriteLine("ignoring {0} {1} ...", item.Title, item.Id);
-
-                    total++;
-                }
-
-                Console.WriteLine($"ignored {total} items.");
-
-                undefinedItems.ForEach(x => unsubscribedService.AddSubscription(x));
+                Console.WriteLine($"unsubscription for {id} {profile.Title} already exists.");
+                return;
             }
-        }
 
-        private static bool _HasSubscription(OrfTvSeries tvSeries, IReadOnlyCollection<OrfTvSeriesSubscription> subscriptions)
-        {
-            return subscriptions.Any(x => x.OrfTvSeriesId == tvSeries.Id);
-        }
-
-        private static OrfTvSeriesSubscription _CreateSubscription(OrfTvSeries series)
-        {
-            return new OrfTvSeriesSubscription()
+            var subscription = new Subscription.Model.Subscription()
             {
-                Name = series.Title,
-                OrfTvSeriesId = series.Id,
-                DownloadSubDirectory = null,
-                EpisodeNameFormat = null,
-                EpisodeNameRemovals = null
+                ProfileId = id,
+                Name = profile.Title,
+                Created = DateTime.Now,
             };
+
+            unSubscriptionManager.AddSubscription(subscription);
+
+            Console.WriteLine($"unsubscription for {id} {profile.Title} added.");
         }
     }
 }

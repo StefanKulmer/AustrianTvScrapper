@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Downloader\Downloader.csproj" />
+    <ProjectReference Include="..\OrfDataProvider\OrfDataProvider.csproj" />
+    <ProjectReference Include="..\Subscription\Subscription.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EditorConfigFiles Remove="C:\Users\Stefan\Source\Repos\StefanKulmer\AustrianTvScrapper\src\DownloadListCreator\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="C:\Users\Stefan\Source\Repos\StefanKulmer\AustrianTvScrapper\src\DownloadListCreator\.editorconfig" />
+  </ItemGroup>
+
+</Project>

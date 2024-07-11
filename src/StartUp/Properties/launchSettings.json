@@ -18,7 +18,7 @@
     },
     "Add": {
       "commandName": "Project",
-      "commandLineArgs": "add --id 13893662"
+      "commandLineArgs": "add --id 13891227"
     },
     "showSeries": {
       "commandName": "Project",
@@ -27,6 +27,10 @@
     "showEpisodes": {
       "commandName": "Project",
       "commandLineArgs": "showEpisodes --all --newOnly"
+    },
+    "import": {
+      "commandName": "Project",
+      "commandLineArgs": "import-subscriptions -s export.txt"
     }
   }
 }

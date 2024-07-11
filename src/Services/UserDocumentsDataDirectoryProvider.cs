@@ -11,7 +11,7 @@ namespace AustrianTvScrapper.Services
     {
         public string GetDataDirectory()
         {
-            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "AustrianTvScrapper");
+            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "AustrianTvScrapper_old");
         }
     }
 }

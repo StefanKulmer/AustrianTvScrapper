@@ -18,7 +18,9 @@ namespace Subscription.Services
 
         public IDirectoryInfo GetDataDirectory()
         {
-            return fileSystem.DirectoryInfo.New(@"%userprofile%\AustrianTvScrapper\Subscriptions");
+            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "AustrianTvScrapper");
+            var pathExpanded = Environment.ExpandEnvironmentVariables(path);
+            return fileSystem.DirectoryInfo.New(path);
         }
     }
 }

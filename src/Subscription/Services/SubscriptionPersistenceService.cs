@@ -15,10 +15,10 @@ namespace Subscription.Services
 
     internal class SubscriptionPersistenceService : ISubscriptionPersistenceService
     {
-        private readonly DataDirectoryProvider dataDirectoryProvider;
+        private readonly IDataDirectoryProvider dataDirectoryProvider;
         private const string FileName = "Subscribed.json";
 
-        public SubscriptionPersistenceService(DataDirectoryProvider dataDirectoryProvider)
+        public SubscriptionPersistenceService(IDataDirectoryProvider dataDirectoryProvider)
         {
             this.dataDirectoryProvider = dataDirectoryProvider;
         }
@@ -30,7 +30,7 @@ namespace Subscription.Services
             return result ?? [];
         }
 
-        public  void SaveAll(string fileName, List<Model.Subscription> subscriptions)
+        public void SaveAll(string fileName, List<Model.Subscription> subscriptions)
         {
             var fileInfo = GetFileInfo(fileName);
             JsonSerializationHelper.Serialize(fileInfo, subscriptions);
