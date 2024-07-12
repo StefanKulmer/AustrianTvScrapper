@@ -6,18 +6,14 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Downloader\Downloader.csproj" />
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Extensions.Options" Version="8.0.0" />
+		<PackageReference Include="System.IO.Abstractions" Version="21.0.22" />
+	</ItemGroup>
+
+	<ItemGroup>
     <ProjectReference Include="..\OrfDataProvider\OrfDataProvider.csproj" />
     <ProjectReference Include="..\Subscription\Subscription.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EditorConfigFiles Remove="C:\Users\Stefan\Source\Repos\StefanKulmer\AustrianTvScrapper\src\DownloadListCreator\.editorconfig" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="C:\Users\Stefan\Source\Repos\StefanKulmer\AustrianTvScrapper\src\DownloadListCreator\.editorconfig" />
   </ItemGroup>
 
 </Project>

@@ -10,10 +10,10 @@ namespace AustrianTvScrapper.StartUp.Commands
 {
     internal class ImportSubscriptionsCommand : Command
     {
-        private readonly IOrfDataProvider orfDataProvider;
-        private readonly ISubscriptionManager subscriptionManager;
-        private readonly IUnSubscriptionManager unSubscriptionManager;
-        private readonly IFileSystem fileSystem;
+        private readonly IOrfDataProvider _orfDataProvider;
+        private readonly ISubscriptionManager _subscriptionManager;
+        private readonly IUnSubscriptionManager _unSubscriptionManager;
+        private readonly IFileSystem _fileSystem;
 
         public ImportSubscriptionsCommand(
             IOrfDataProvider orfDataProvider,
@@ -22,10 +22,10 @@ namespace AustrianTvScrapper.StartUp.Commands
             IFileSystem fileSystem)
             : base("import-subscriptions", "imports subscriptions from a file")
         {
-            this.orfDataProvider = orfDataProvider;
-            this.subscriptionManager = subscriptionManager;
-            this.unSubscriptionManager = unSubscriptionManager;
-            this.fileSystem = fileSystem;
+            _orfDataProvider = orfDataProvider;
+            _subscriptionManager = subscriptionManager;
+            _unSubscriptionManager = unSubscriptionManager;
+            _fileSystem = fileSystem;
             AddOption(new Option<string>(new[] { "--source", "-s" }, getDefaultValue: () => null, "source file for import"));
 
             Handler = CommandHandler.Create<string>(_HandleCommand);
@@ -33,8 +33,8 @@ namespace AustrianTvScrapper.StartUp.Commands
 
         private async void _HandleCommand(string source)
         {
-            var genres = orfDataProvider.GetGenres().Result;
-            var lines = fileSystem.File.ReadAllLines(source);
+            var genres = _orfDataProvider.GetGenres().Result;
+            var lines = _fileSystem.File.ReadAllLines(source);
 
             foreach (var line in lines)
             {
@@ -53,7 +53,7 @@ namespace AustrianTvScrapper.StartUp.Commands
                 if (!int.TryParse(idText, out var id))
                     continue;
 
-                var profile = orfDataProvider.GetProfile(id).Result;
+                var profile = _orfDataProvider.GetProfile(id).Result;
                 if (profile == null)
                 {
                     Console.WriteLine($"profile {id} doesn't exist.");
@@ -62,7 +62,7 @@ namespace AustrianTvScrapper.StartUp.Commands
 
                 if (firstChar == 's')
                 {
-                    var subscriptions = subscriptionManager.GetSubscriptions();
+                    var subscriptions = _subscriptionManager.GetSubscriptions();
                     if (subscriptions.Any(s => s.ProfileId == id))
                     {
                         Console.WriteLine($"subscription for {id} {profile.Title} already exists.");
@@ -88,7 +88,7 @@ namespace AustrianTvScrapper.StartUp.Commands
                                 subDir = "(Serien)";
                                 break;
                             case "Film":
-                                var episodes = orfDataProvider.GetEpisodesOfProfileAsync(id).Result;
+                                var episodes = _orfDataProvider.GetEpisodesOfProfileAsync(id).Result;
                                 if (episodes.Count > 1)
                                 {
                                     subDir = "(Serien)";
@@ -105,13 +105,13 @@ namespace AustrianTvScrapper.StartUp.Commands
                         subscription.DownloadSubDirectory = @$"#year\{profile.Title}";
                     }
 
-                    subscriptionManager.AddSubscription(subscription);
+                    _subscriptionManager.AddSubscription(subscription);
 
-                    _RemoveFrom(unSubscriptionManager, id);
+                    _RemoveFrom(_unSubscriptionManager, id);
                 }
                 else if (firstChar == 'u')
                 {
-                    var subscriptions = unSubscriptionManager.GetSubscriptions();
+                    var subscriptions = _unSubscriptionManager.GetSubscriptions();
                     if (subscriptions.Any(s => s.ProfileId == id))
                     {
                         Console.WriteLine($"unsubscription for {id} {profile.Title} already exists.");
@@ -125,11 +125,11 @@ namespace AustrianTvScrapper.StartUp.Commands
                         Created = DateTime.Now,
                     };
 
-                    unSubscriptionManager.AddSubscription(subscription);
+                    _unSubscriptionManager.AddSubscription(subscription);
 
                     Console.WriteLine($"unsubscription for {id} {profile.Title} added.");
 
-                    _RemoveFrom(unSubscriptionManager, id);
+                    _RemoveFrom(_unSubscriptionManager, id);
                 }
             }
         }

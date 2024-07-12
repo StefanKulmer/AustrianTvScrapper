@@ -1,12 +1,7 @@
-﻿using Downloader.Model;
-using System;
-using System.Collections.Generic;
+﻿using DownloadListCreator.Model;
 using System.Diagnostics;
 using System.IO.Abstractions;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace Downloader.Services
 {
@@ -17,18 +12,20 @@ namespace Downloader.Services
 
     public class Downloader : IDownloader
     {
-        private readonly IFileSystem fileSystem;
-        private readonly IDirectoryProvider directoryProvider;
+        private readonly IFileSystem _fileSystem;
+        private readonly IDirectoryProvider _downloaderDirectoryProvider;
+        private readonly DownloadListCreator.Services.IDirectoryProvider _downloadListDirectoryProvider;
 
-        public Downloader(IFileSystem fileSystem, IDirectoryProvider directoryProvider)
+        public Downloader(IFileSystem fileSystem, IDirectoryProvider downloaderDirectoryProvider, DownloadListCreator.Services.IDirectoryProvider downloadListDirectoryProvider)
         {
-            this.fileSystem = fileSystem;
-            this.directoryProvider = directoryProvider;
+            _fileSystem = fileSystem;
+            _downloaderDirectoryProvider = downloaderDirectoryProvider;
+            _downloadListDirectoryProvider = downloadListDirectoryProvider;
         }
 
         public void Start()
         {
-            var queueDirectory = directoryProvider.Queue;
+            var queueDirectory = _downloadListDirectoryProvider.Queue;
             while (true)
             {
                 var files = queueDirectory.GetFiles("*.json");
@@ -45,17 +42,17 @@ namespace Downloader.Services
                         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
                         WriteIndented = true
                     };
-                    download = JsonSerializer.Deserialize<Model.Download>(openStream, serializeOptions);
+                    download = JsonSerializer.Deserialize<Download>(openStream, serializeOptions);
                 }
                     
                 if (download == null)
                 {
-                    firstFile.MoveTo(directoryProvider.Failed.FullName);
+                    firstFile.MoveTo(_downloadListDirectoryProvider.Failed.FullName);
                     continue;
                 }
 
-                var rootedDirectory = Path.Combine(directoryProvider.DownloadDirectory.FullName, download.Directory);
-                var downloadDirectory = fileSystem.DirectoryInfo.New(rootedDirectory);
+                var rootedDirectory = Path.Combine(_downloaderDirectoryProvider.DownloadDirectory.FullName, download.Directory);
+                var downloadDirectory = _fileSystem.DirectoryInfo.New(rootedDirectory);
                 if (downloadDirectory.Exists)
                 {
                     downloadDirectory.Delete(true);
@@ -85,17 +82,17 @@ namespace Downloader.Services
                         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
                         WriteIndented = true
                     };
-                    JsonSerializer.Serialize<Model.Download>(createStream, download, serializeOptions);
+                    JsonSerializer.Serialize<Download>(createStream, download, serializeOptions);
                 }
                     
                 if (p.ExitCode == 0)
                 {
-                    firstFile.CopyTo(fileSystem.Path.Combine(downloadDirectory.FullName, firstFile.Name));
-                    firstFile.MoveTo(fileSystem.Path.Combine(directoryProvider.Succeeded.FullName, firstFile.Name));
+                    firstFile.CopyTo(_fileSystem.Path.Combine(downloadDirectory.FullName, firstFile.Name));
+                    firstFile.MoveTo(_fileSystem.Path.Combine(_downloadListDirectoryProvider.Succeeded.FullName, firstFile.Name));
                 }
                 else
                 {
-                    firstFile.MoveTo(fileSystem.Path.Combine(directoryProvider.Failed.FullName, firstFile.Name), true);
+                    firstFile.MoveTo(_fileSystem.Path.Combine(_downloadListDirectoryProvider.Failed.FullName, firstFile.Name), true);
                     downloadDirectory.Delete(true);
                 }
             }

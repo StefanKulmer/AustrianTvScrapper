@@ -1,45 +1,45 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Downloader.Model;
+using Microsoft.Extensions.Options;
 using System.IO.Abstractions;
 
-namespace Downloader.Services
+namespace Downloader.Services;
+
+public interface IDirectoryProvider
 {
-    public interface  IDirectoryProvider
-    {
-        IDirectoryInfo Queue { get; }
-        IDirectoryInfo Succeeded { get; }
-        IDirectoryInfo Failed { get; }
-        IDirectoryInfo DownloadDirectory { get; }
-        IDirectoryInfo SubscriptionsDirectory { get; }
-    }
+    IDirectoryInfo DownloadDirectory { get; }
+    IFileInfo YtDlpFile { get; }
+}
 
-    public class DirectoryProvider : IDirectoryProvider
-    {
-        private readonly IFileSystem fileSystem;
-        private readonly DirectoryOptions directoryOptions;
+public class DirectoryProvider : IDirectoryProvider
+{
+    private readonly IFileSystem _fileSystem;
+    private readonly DownloaderOptions _downloaderOptions;
 
-        public DirectoryProvider(IFileSystem fileSystem, IOptions<DirectoryOptions> directoryOptions)
+    public DirectoryProvider(IFileSystem fileSystem, IOptions<DownloaderOptions> downloaderOptions)
+    {
+        if (fileSystem is null)
         {
-            if (fileSystem is null)
-            {
-                throw new ArgumentNullException(nameof(fileSystem));
-            }
-
-            if (directoryOptions is null)
-            {
-                throw new ArgumentNullException(nameof(directoryOptions));
-            }
-
-            this.fileSystem = fileSystem;
-            this.directoryOptions = directoryOptions.Value;
+            throw new ArgumentNullException(nameof(fileSystem));
         }
 
-        public IDirectoryInfo Queue => fileSystem.DirectoryInfo.New(Path.Combine(directoryOptions.DownloadListDirectory, "Queue"));
+        if (downloaderOptions is null)
+        {
+            throw new ArgumentNullException(nameof(downloaderOptions));
+        }
 
-        public IDirectoryInfo Succeeded => fileSystem.DirectoryInfo.New(Path.Combine(directoryOptions.DownloadListDirectory, "Succeeded"));
+        _fileSystem = fileSystem;
 
-        public IDirectoryInfo Failed => fileSystem.DirectoryInfo.New(Path.Combine(directoryOptions.DownloadListDirectory, "Failed"));
-
-        public IDirectoryInfo DownloadDirectory => fileSystem.DirectoryInfo.New(directoryOptions.DownloadDirectory);
-        public IDirectoryInfo SubscriptionsDirectory => fileSystem.DirectoryInfo.New(directoryOptions.SubscriptionsDirectory);
+        if (downloaderOptions.Value != null)
+        {
+            _downloaderOptions = downloaderOptions.Value;
+        }
+        else
+        {
+            _downloaderOptions = DownloaderOptions.Default;
+        }
     }
+
+    public IDirectoryInfo DownloadDirectory => _fileSystem.DirectoryInfo.New(_downloaderOptions.DownloadDirectory);
+
+    public IFileInfo YtDlpFile => _fileSystem.FileInfo.New(_downloaderOptions.YtDlpPath);
 }

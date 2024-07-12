@@ -18,6 +18,9 @@ namespace SystemCommandLine.Demo
     using Downloader.Services;
     using Microsoft.Extensions.Options;
     using AustrianTvScrapper.StartUp;
+    using Downloader.Model;
+    using DownloadListCreator.Model;
+    using Subscription.Model;
 
     internal static class Program
     {
@@ -53,28 +56,8 @@ namespace SystemCommandLine.Demo
             string userDataDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             string appDataDir = Path.Combine(userDataDir, "AustrianTvScrapper");
             string optionsFilePath = Path.Combine(appDataDir, "appsettings.json");
-
-            if (!File.Exists(optionsFilePath))
-            {
-                Console.WriteLine("Options file not found. Creating default options file.");
-                Directory.CreateDirectory(appDataDir);
-
-                var defaultOptions = new DirectoryOptions { 
-                    SubscriptionsDirectory = appDataDir,
-                    DownloadListDirectory = appDataDir,
-                    DownloadDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "AustrianTvScrapper")
-                };
-                dynamic root = new
-                {
-                    DirectoryOptions = defaultOptions
-                };
-                var serializerOptions = new JsonSerializerOptions()
-                {
-                    WriteIndented = true
-                };
-
-                File.WriteAllText(optionsFilePath, JsonSerializer.Serialize(root, serializerOptions));
-            }
+            
+            _CreateDefaultAppSettings(optionsFilePath);
 
             // Build configuration
             var config = new ConfigurationBuilder()
@@ -85,13 +68,40 @@ namespace SystemCommandLine.Demo
             var services = new ServiceCollection();
 
             services.AddHostedService<DirectorySetupService>();
-            services.Configure<DirectoryOptions>(config.GetSection("DirectoryOptions"));
+            services.Configure<SubscriptionOptions>(config.GetSection(nameof(SubscriptionOptions)));
+            services.Configure<DownloaderOptions>(config.GetSection(nameof(DownloaderOptions)));
+            services.Configure<DownloadListOptions>(config.GetSection(nameof(DownloadListOptions)));
             services.AddCliCommands();
             services.AddOrfTvSeriesCommands();
             services.AddSubscription();
             services.AddDownloadListCreator();
+            services.AddDownloader();
+            services.AddTransient<OrfDataProvider.Services.IOrfDataProvider, OrfDataProvider.Services.OrfDataProvider>();
 
             return services.BuildServiceProvider();
+        }
+
+        private static void _CreateDefaultAppSettings(string appSettingsPath)
+        {
+
+            if (File.Exists(appSettingsPath))
+                return;
+
+            Console.WriteLine("Options file not found. Creating default options file.");
+
+            dynamic root = new
+            {
+                SubscriptionOptions = SubscriptionOptions.Default,
+                DownloadListOptions = DownloadListOptions.Default,
+                DownloaderOptions = DownloaderOptions.Default
+            };
+
+            var serializerOptions = new JsonSerializerOptions()
+            {
+                WriteIndented = true
+            };
+
+            File.WriteAllText(appSettingsPath, JsonSerializer.Serialize(root, serializerOptions));
         }
     }
 }

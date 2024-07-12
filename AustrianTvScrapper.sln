@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.6.30114.105
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{9D6E1BA1-6E94-451A-9038-BCB9F47C3FB0}"
 EndProject
@@ -11,13 +11,18 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Services", "src\Services\Se
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Services.Tests", "src\tests\Services.Tests\Services.Tests.csproj", "{02AAEBB7-140A-4698-A7E6-262D56587329}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Subscription", "src\Subscription\Subscription.csproj", "{B684A85C-4F28-409C-8AB9-A724F3E6EAFD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Subscription", "src\Subscription\Subscription.csproj", "{B684A85C-4F28-409C-8AB9-A724F3E6EAFD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrfDataProvider", "src\OrfDataProvider\OrfDataProvider.csproj", "{7A4644FC-CD32-48C8-84F9-2551558544CA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrfDataProvider", "src\OrfDataProvider\OrfDataProvider.csproj", "{7A4644FC-CD32-48C8-84F9-2551558544CA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Downloader", "src\Downloader\Downloader.csproj", "{B98B33A3-1F32-4CA8-8911-065A14E80490}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Downloader", "src\Downloader\Downloader.csproj", "{B98B33A3-1F32-4CA8-8911-065A14E80490}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DownloadListCreator", "src\DownloadListCreator\DownloadListCreator.csproj", "{3D333514-4EA7-4801-A130-532815A2E75F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DownloadListCreator", "src\DownloadListCreator\DownloadListCreator.csproj", "{3D333514-4EA7-4801-A130-532815A2E75F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{CA6B4B40-CD75-4301-BAE8-F8D2957F456F}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

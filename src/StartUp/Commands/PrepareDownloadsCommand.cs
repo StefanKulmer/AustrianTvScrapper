@@ -1,4 +1,4 @@
-﻿using DownloadListCreator;
+﻿using DownloadListCreator.Services;
 using System.CommandLine;
 using System.CommandLine.NamingConventionBinder;
 
@@ -6,18 +6,18 @@ namespace AustrianTvScrapper.StartUp.Commands
 {
     internal class PrepareDownloadsCommand : Command
     {
-        private readonly IDownloadListCreator downloadListCreator;
+        private readonly IDownloadListCreator _downloadListCreator;
 
-        public PrepareDownloadsCommand(DownloadListCreator.IDownloadListCreator downloadListCreator)
+        public PrepareDownloadsCommand(IDownloadListCreator downloadListCreator)
             : base("preparedl", "queues new found episodes in the downloader list")
         {
-            this.downloadListCreator = downloadListCreator;
+            _downloadListCreator = downloadListCreator;
             Handler = CommandHandler.Create(_HandleCommand);
         }
 
         private void _HandleCommand()
         {
-            downloadListCreator.Create();
+            _downloadListCreator.Create();
         }
     }
 }

@@ -1,13 +1,10 @@
-﻿using Downloader.Services;
-using OrfDataProvider.Model;
+﻿using DownloadListCreator.Model;
 using OrfDataProvider.Services;
 using Subscription.Services;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Xml.Linq;
 
-namespace DownloadListCreator;
-
+namespace DownloadListCreator.Services;
 
 public interface IDownloadListCreator
 {
@@ -16,30 +13,31 @@ public interface IDownloadListCreator
 
 public class DownloadListCreator : IDownloadListCreator
 {
-    private readonly ISubscriptionManager subscriptionManager;
-    private readonly IDownloadsProvider downloadsProvider;
-    private readonly IOrfDataProvider orfDataProvider;
-    private readonly IDirectoryProvider downloaderDirectoryProvider;
+    private readonly ISubscriptionManager _subscriptionManager;
+    private readonly IDownloadsProvider _downloadsProvider;
+    private readonly IOrfDataProvider _orfDataProvider;
+    private readonly IDirectoryProvider _downloaderDirectoryProvider;
 
-    public DownloadListCreator(ISubscriptionManager subscriptionManager, IDownloadsProvider downloadsProvider, IOrfDataProvider orfDataProvider, Downloader.Services.IDirectoryProvider downloaderDirectoryProvider)
+    public DownloadListCreator(ISubscriptionManager subscriptionManager, IDownloadsProvider downloadsProvider, IOrfDataProvider orfDataProvider, IDirectoryProvider downloaderDirectoryProvider)
     {
-        this.subscriptionManager = subscriptionManager;
-        this.downloadsProvider = downloadsProvider;
-        this.orfDataProvider = orfDataProvider;
-        this.downloaderDirectoryProvider = downloaderDirectoryProvider;
+        _subscriptionManager = subscriptionManager;
+        _downloadsProvider = downloadsProvider;
+        _orfDataProvider = orfDataProvider;
+        _downloaderDirectoryProvider = downloaderDirectoryProvider;
     }
 
     public void Create()
     {
-        var existingDownloads = downloadsProvider.GetDownloaded().ToList();
-        var alreadyScheduled = downloadsProvider.GetScheduled().ToList();
-        existingDownloads.AddRange(alreadyScheduled);
+        var existingDownloads = new List<Download>();
+        existingDownloads.AddRange(_downloadsProvider.GetDownloaded());
+        existingDownloads.AddRange(_downloadsProvider.GetScheduled());
+
         int i = 0;
-        var subscriptions = subscriptionManager.GetSubscriptions();
+        var subscriptions = _subscriptionManager.GetSubscriptions();
         foreach (var subscription in subscriptions)
         {
-            var episodes = orfDataProvider.GetEpisodesOfProfileAsync(subscription.ProfileId).Result;
-            foreach (var  episode in episodes)
+            var episodes = _orfDataProvider.GetEpisodesOfProfileAsync(subscription.ProfileId).Result;
+            foreach (var episode in episodes)
             {
                 if (existingDownloads.Any(ex => ex.EpisodeId == episode.Id && ex.ProfileId == episode.ProfileId))
                     continue;
@@ -67,7 +65,7 @@ public class DownloadListCreator : IDownloadListCreator
                 }
                 directory = directory.Replace("#year", episode.ReleaseDate.Year.ToString(), StringComparison.OrdinalIgnoreCase);
 
-                var dl = new Downloader.Model.Download()
+                var dl = new Download()
                 {
                     EpisodeId = episode.Id,
                     ProfileId = episode.ProfileId,
@@ -82,10 +80,15 @@ public class DownloadListCreator : IDownloadListCreator
                 };
 
                 var fileName = $"{i++:00000000}_{episode.ProfileId}_{episode.Id}_{episodeFileName}.json";
-                var filePath = Path.Combine(downloaderDirectoryProvider.Queue.FullName, fileName);
+                var filePath = Path.Combine(_downloaderDirectoryProvider.Queue.FullName, fileName);
+
+                if (!_downloaderDirectoryProvider.Queue.Exists)
+                {
+                    _downloaderDirectoryProvider.Queue.Create();
+                }
 
                 // Create a file stream for writing
-                using FileStream createStream = System.IO.File.Create(filePath);
+                using FileStream createStream = File.Create(filePath);
 
                 // Serialize the object to the file stream
                 JsonSerializer.Serialize(createStream, dl, serializeOptions);
@@ -93,7 +96,7 @@ public class DownloadListCreator : IDownloadListCreator
                 // Ensure all data is written to the file
                 createStream.Flush();
             }
-            
+
         }
     }
 

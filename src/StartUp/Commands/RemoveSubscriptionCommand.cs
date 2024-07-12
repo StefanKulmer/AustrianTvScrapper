@@ -9,12 +9,12 @@ namespace AustrianTvScrapper.StartUp.Commands
 {
     internal class RemoveSubscriptionCommand : Command
     {
-        private readonly ISubscriptionManager subscriptionManager;
+        private readonly ISubscriptionManager _subscriptionManager;
 
         public RemoveSubscriptionCommand(Subscription.Services.ISubscriptionManager subscriptionManager)
             : base("remove-subscription", "removes a subscription")
         {
-            this.subscriptionManager = subscriptionManager;
+            _subscriptionManager = subscriptionManager;
             AddOption(new Option<int>(new[] { "--id", "-id" }, "id of TV show"));
 
             Handler = CommandHandler.Create<int, string>(_HandleCommand);
@@ -22,7 +22,7 @@ namespace AustrianTvScrapper.StartUp.Commands
 
         private void _HandleCommand(int id, string downloadSubDirectory)
         {
-            var subscriptions = subscriptionManager.GetSubscriptions();
+            var subscriptions = _subscriptionManager.GetSubscriptions();
             var subscription = subscriptions.FirstOrDefault(s => s.Id == id);
             if (subscription == null)
             {
@@ -30,7 +30,7 @@ namespace AustrianTvScrapper.StartUp.Commands
                 return;
             }
 
-            subscriptionManager.RemoveSubscription(subscription);
+            _subscriptionManager.RemoveSubscription(subscription);
             Console.WriteLine($"removed subscription for {id}.");
         }
     }

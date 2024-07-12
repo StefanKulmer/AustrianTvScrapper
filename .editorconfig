@@ -4,6 +4,9 @@ root = true
 # C# files
 [*.cs]
 
+# Enforce that 'this' is not used explicitly
+dotnet_diagnostic.IDE0003.severity = error
+
 #### Core EditorConfig Options ####
 
 # Indentation and spacing
@@ -14,9 +17,6 @@ tab_width = 4
 # New line preferences
 end_of_line = crlf
 insert_final_newline = false
-
-# 
-
 
 #### .NET Coding Conventions ####
 
@@ -232,3 +232,27 @@ dotnet_naming_style.begins_with_i.required_prefix = I
 dotnet_naming_style.begins_with_i.required_suffix = 
 dotnet_naming_style.begins_with_i.word_separator = 
 dotnet_naming_style.begins_with_i.capitalization = pascal_case
+
+# Naming rules
+dotnet_naming_rule.private_fields_with_underscore.symbols = private_fields
+dotnet_naming_rule.private_fields_with_underscore.style = underscore_prefix
+dotnet_naming_rule.private_fields_with_underscore.severity = error
+
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+dotnet_naming_symbols.private_fields.required_modifiers = 
+
+dotnet_naming_style.underscore_prefix.required_prefix = _
+dotnet_naming_style.underscore_prefix.capitalization = camel_case
+
+# Rule to ensure const fields use PascalCase
+dotnet_naming_rule.constants_should_be_pascal_case.symbols = const_fields
+dotnet_naming_rule.constants_should_be_pascal_case.style = pascal_case
+dotnet_naming_rule.constants_should_be_pascal_case.severity = error
+
+# Symbol specification for const fields
+dotnet_naming_symbols.const_fields.applicable_kinds = field
+dotnet_naming_symbols.const_fields.required_modifiers = const
+
+# Naming style for PascalCase
+dotnet_naming_style.pascal_case.capitalization = pascal_case

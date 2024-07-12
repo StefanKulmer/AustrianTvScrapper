@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+	<ProjectReference Include="..\Downloader\Downloader.csproj" />
     <ProjectReference Include="..\DownloadListCreator\DownloadListCreator.csproj" />
     <ProjectReference Include="..\Services\Services.csproj" />
     <ProjectReference Include="..\Subscription\Subscription.csproj" />

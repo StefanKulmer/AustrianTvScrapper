@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using DownloadListCreator.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DownloadListCreator
 {
@@ -6,11 +7,10 @@ namespace DownloadListCreator
     {
         public static IServiceCollection AddDownloadListCreator(this IServiceCollection services)
         {
-            services.AddTransient<Downloader.Services.IDirectoryProvider, Downloader.Services.DirectoryProvider>();
-            services.AddTransient<Downloader.Services.IDownloadsProvider, Downloader.Services.DownloadsProvider>();
-            services.AddTransient<Downloader.Services.IDownloader, Downloader.Services.Downloader>();
-            services.AddTransient<OrfDataProvider.Services.IOrfDataProvider, OrfDataProvider.Services.OrfDataProvider>();
-            services.AddTransient<IDownloadListCreator, DownloadListCreator>();
+            services.AddTransient<IDirectoryProvider, DirectoryProvider>();
+            services.AddTransient<IDownloadsProvider, DownloadsProvider>();
+            services.AddTransient<IDownloadsProvider, DownloadsProvider>();
+            services.AddTransient<IDownloadListCreator, Services.DownloadListCreator>();
 
             return services;
         }

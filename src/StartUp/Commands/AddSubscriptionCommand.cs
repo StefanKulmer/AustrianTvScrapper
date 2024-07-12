@@ -9,14 +9,14 @@ namespace AustrianTvScrapper.StartUp.Commands
 {
     internal class AddSubscriptionCommand : Command
     {
-        private readonly ISubscriptionManager subscriptionManager;
-        private readonly IOrfDataProvider orfDataProvider;
+        private readonly ISubscriptionManager _subscriptionManager;
+        private readonly IOrfDataProvider _orfDataProvider;
 
         public AddSubscriptionCommand(Subscription.Services.ISubscriptionManager subscriptionManager, IOrfDataProvider orfDataProvider)
             : base("add-subscription", "adds a subscription")
         {
-            this.subscriptionManager = subscriptionManager;
-            this.orfDataProvider = orfDataProvider;
+            _subscriptionManager = subscriptionManager;
+            _orfDataProvider = orfDataProvider;
             AddOption(new Option<int>(new[] { "--id", "-id" }, "id of TV show"));
             AddOption(new Option<string>(new[] { "--downloadSubDirectory", "-dir" }, () => string.Empty, description: "sub directory"));
 
@@ -25,14 +25,14 @@ namespace AustrianTvScrapper.StartUp.Commands
 
         private void _HandleCommand(int id, string downloadSubDirectory)
         {
-            var profile = orfDataProvider.GetProfile(id).Result;
+            var profile = _orfDataProvider.GetProfile(id).Result;
             if (profile == null)
             {
                 Console.WriteLine($"profile {id} doesn't exist.");
                 return;
             }
 
-            var subscriptions = subscriptionManager.GetSubscriptions();
+            var subscriptions = _subscriptionManager.GetSubscriptions();
             if (subscriptions.Any(s => s.ProfileId == id))
             {
                 Console.WriteLine($"subscription for {id} {profile.Title} already exists.");
@@ -46,7 +46,7 @@ namespace AustrianTvScrapper.StartUp.Commands
                 Created = DateTime.Now,
             };
 
-            var genres = orfDataProvider.GetGenres().Result;
+            var genres = _orfDataProvider.GetGenres().Result;
             var genre = genres.First(g => g.TheLinks.Self.TheHref == profile.Links.Genre.Href);
             string subDir = null;
             if (genre != null)
@@ -60,7 +60,7 @@ namespace AustrianTvScrapper.StartUp.Commands
                         subDir = "(Serien)";
                         break;
                     case "Film":
-                        var episodes = orfDataProvider.GetEpisodesOfProfileAsync(id).Result;
+                        var episodes = _orfDataProvider.GetEpisodesOfProfileAsync(id).Result;
                         if (episodes.Count > 1)
                         {
                             subDir = "(Serien)";
@@ -77,7 +77,7 @@ namespace AustrianTvScrapper.StartUp.Commands
                 subscription.DownloadSubDirectory = @$"#year\{profile.Title}";
             }
 
-            subscriptionManager.AddSubscription(subscription);
+            _subscriptionManager.AddSubscription(subscription);
 
             Console.WriteLine($"subscription for {id} {profile.Title} added.");
         }

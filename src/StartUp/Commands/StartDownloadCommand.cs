@@ -6,19 +6,19 @@ namespace AustrianTvScrapper.StartUp.Commands
 {
     internal class StartDownloadCommand : Command
     {
-        private readonly IDownloader downloader;
+        private readonly IDownloader _downloader;
 
         public StartDownloadCommand(IDownloader downloader)
             : base("startdownload", "starts download of queued episodes")
         {
-            this.downloader = downloader;
+            _downloader = downloader;
 
             Handler = CommandHandler.Create(_HandleCommand);
         }
 
         private void _HandleCommand()
         {
-            downloader.Start();
+            _downloader.Start();
         }
     }
 }

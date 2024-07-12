@@ -1,32 +1,25 @@
-﻿using Downloader.Services;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
+﻿using Microsoft.Extensions.Hosting;
 using System.IO.Abstractions;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using IDirectoryProvider = DownloadListCreator.Services.IDirectoryProvider;
 
 namespace AustrianTvScrapper.StartUp
 {
     internal class DirectorySetupService : IHostedService
     {
-        private readonly IDirectoryProvider directoryProvider;
+        private readonly IDirectoryProvider _directoryProvider;
 
         public DirectorySetupService(IDirectoryProvider directoryProvider)
         {
-            this.directoryProvider = directoryProvider;
+            _directoryProvider = directoryProvider;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            _EnsureExists(directoryProvider.Succeeded);
-            _EnsureExists(directoryProvider.Failed);
-            _EnsureExists(directoryProvider.Queue);
-            _EnsureExists(directoryProvider.DownloadDirectory);
-            _EnsureExists(directoryProvider.SubscriptionsDirectory);
+            _EnsureExists(_directoryProvider.Succeeded);
+            _EnsureExists(_directoryProvider.Failed);
+            _EnsureExists(_directoryProvider.Queue);
 
             return Task.CompletedTask;
         }

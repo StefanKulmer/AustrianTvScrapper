@@ -16,7 +16,7 @@ namespace Subscription
             services.AddTransient<ISubscriptionManager>(s => new SubscriptionManager("Subscribed.json", s.GetService<ISubscriptionPersistenceService>()));
             services.AddTransient<IUnSubscriptionManager>(s => new SubscriptionManager("UnSubscribed.json", s.GetService<ISubscriptionPersistenceService>()));
             services.AddTransient<ISubscriptionPersistenceService, SubscriptionPersistenceService>();
-            services.AddTransient<IDataDirectoryProvider, DataDirectoryProvider>();
+            services.AddTransient<IDirectoryProvider, DirectoryProvider>();
             services.AddSingleton<IFileSystem, FileSystem>();
 
             return services;

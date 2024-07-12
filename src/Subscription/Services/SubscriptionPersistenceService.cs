@@ -1,5 +1,4 @@
-﻿using Downloader.Services;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
@@ -17,11 +16,11 @@ namespace Subscription.Services
     internal class SubscriptionPersistenceService : ISubscriptionPersistenceService
     {
         private const string FileName = "Subscribed.json";
-        private readonly IDirectoryProvider directoryProvider;
+        private readonly IDirectoryProvider _directoryProvider;
 
         public SubscriptionPersistenceService(IDirectoryProvider directoryProvider)
         {
-            this.directoryProvider = directoryProvider;
+            _directoryProvider = directoryProvider;
         }
 
         public List<Model.Subscription> LoadAll(string fileName)
@@ -39,7 +38,7 @@ namespace Subscription.Services
 
         private IFileInfo GetFileInfo(string fileName)
         {
-            var dataDirectory = directoryProvider.SubscriptionsDirectory;
+            var dataDirectory = _directoryProvider.GetDataDirectory();
             var path = Path.Combine(dataDirectory.FullName, fileName);
             return dataDirectory.FileSystem.FileInfo.New(path);
         }

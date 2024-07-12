@@ -10,16 +10,16 @@ namespace AustrianTvScrapper.StartUp.Commands
 {
     internal class ShowSeriesCommand : Command
     {
-        private readonly IOrfTvSeriesScrapper orfTvSeriesScrapper;
-        private readonly IOrfTvSeriesSnapshotService orfTvSeriesSnapshotService;
-        private readonly IOrfDataProvider orfDataProvider;
+        private readonly IOrfTvSeriesScrapper _orfTvSeriesScrapper;
+        private readonly IOrfTvSeriesSnapshotService _orfTvSeriesSnapshotService;
+        private readonly IOrfDataProvider _orfDataProvider;
 
         public ShowSeriesCommand(IOrfTvSeriesScrapper orfTvSeriesScrapper, IOrfTvSeriesSnapshotService orfTvSeriesSnapshotService, IOrfDataProvider orfDataProvider)
             : base("showSeries", "shows available series")
         {
-            this.orfTvSeriesScrapper = orfTvSeriesScrapper;
-            this.orfTvSeriesSnapshotService = orfTvSeriesSnapshotService;
-            this.orfDataProvider = orfDataProvider;
+            _orfTvSeriesScrapper = orfTvSeriesScrapper;
+            _orfTvSeriesSnapshotService = orfTvSeriesSnapshotService;
+            _orfDataProvider = orfDataProvider;
 
             AddOption(new Option<bool>(new[] { "--episodes", "-e" }, getDefaultValue: () => false, "shows episodes"));
 
@@ -36,8 +36,8 @@ namespace AustrianTvScrapper.StartUp.Commands
 
         private async void _HandleCommand(bool showEpisodes)
         {
-            var genres = orfDataProvider.GetGenres().Result;
-            var profiles = orfDataProvider.GetProfiles().Result;
+            var genres = _orfDataProvider.GetGenres().Result;
+            var profiles = _orfDataProvider.GetProfiles().Result;
             foreach (var profile in profiles.OrderBy(p => p.Title))
             {
                 var genre = genres.First(g => g.TheLinks.Self.TheHref == profile.Links.Genre.Href);
@@ -46,7 +46,7 @@ namespace AustrianTvScrapper.StartUp.Commands
 
                 if (showEpisodes)
                 {
-                    var episodes = orfDataProvider.GetEpisodesOfProfileAsync(profile.Id).Result;
+                    var episodes = _orfDataProvider.GetEpisodesOfProfileAsync(profile.Id).Result;
                     Console.WriteLine("\t{0} episodes", episodes.Count);
                     Console.WriteLine("\t{0:yyyy-MM-dd} {1}", episodes.First().ReleaseDate, episodes.First().Name);
                 }

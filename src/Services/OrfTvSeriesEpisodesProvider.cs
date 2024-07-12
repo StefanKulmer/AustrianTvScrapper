@@ -14,7 +14,7 @@ namespace AustrianTvScrapper.Services
         {
             this.urlProvider = urlProvider;
             this.htmlDocumentLoader = htmlDocumentLoader;
-            this.epsiodesParser = episodesParser;
+            epsiodesParser = episodesParser;
         }
 
         public async Task<IReadOnlyCollection<OrfTvSeriesEpisode>> GetEpisodesAsync(OrfTvSeries orfTvSeries)
