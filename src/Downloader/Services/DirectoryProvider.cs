@@ -1,11 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
 using System.IO.Abstractions;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 
 namespace Downloader.Services
 {
@@ -15,6 +9,7 @@ namespace Downloader.Services
         IDirectoryInfo Succeeded { get; }
         IDirectoryInfo Failed { get; }
         IDirectoryInfo DownloadDirectory { get; }
+        IDirectoryInfo SubscriptionsDirectory { get; }
     }
 
     public class DirectoryProvider : IDirectoryProvider
@@ -45,5 +40,6 @@ namespace Downloader.Services
         public IDirectoryInfo Failed => fileSystem.DirectoryInfo.New(Path.Combine(directoryOptions.DownloadListDirectory, "Failed"));
 
         public IDirectoryInfo DownloadDirectory => fileSystem.DirectoryInfo.New(directoryOptions.DownloadDirectory);
+        public IDirectoryInfo SubscriptionsDirectory => fileSystem.DirectoryInfo.New(directoryOptions.SubscriptionsDirectory);
     }
 }

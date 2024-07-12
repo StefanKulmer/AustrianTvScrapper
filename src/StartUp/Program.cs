@@ -17,6 +17,8 @@ namespace SystemCommandLine.Demo
     using System.Text.Json;
     using Downloader.Services;
     using Microsoft.Extensions.Options;
+    using AustrianTvScrapper.StartUp;
+
     internal static class Program
     {
         /// <summary>
@@ -56,12 +58,22 @@ namespace SystemCommandLine.Demo
             {
                 Console.WriteLine("Options file not found. Creating default options file.");
                 Directory.CreateDirectory(appDataDir);
+
                 var defaultOptions = new DirectoryOptions { 
                     SubscriptionsDirectory = appDataDir,
                     DownloadListDirectory = appDataDir,
                     DownloadDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "AustrianTvScrapper")
                 };
-                File.WriteAllText(optionsFilePath, JsonSerializer.Serialize(defaultOptions));
+                dynamic root = new
+                {
+                    DirectoryOptions = defaultOptions
+                };
+                var serializerOptions = new JsonSerializerOptions()
+                {
+                    WriteIndented = true
+                };
+
+                File.WriteAllText(optionsFilePath, JsonSerializer.Serialize(root, serializerOptions));
             }
 
             // Build configuration
@@ -72,6 +84,7 @@ namespace SystemCommandLine.Demo
 
             var services = new ServiceCollection();
 
+            services.AddHostedService<DirectorySetupService>();
             services.Configure<DirectoryOptions>(config.GetSection("DirectoryOptions"));
             services.AddCliCommands();
             services.AddOrfTvSeriesCommands();

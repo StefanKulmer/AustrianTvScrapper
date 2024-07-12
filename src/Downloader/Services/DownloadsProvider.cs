@@ -30,6 +30,9 @@ namespace Downloader.Services
 
         private IEnumerable<Download> _GetFromDirectory(IDirectoryInfo directory)
         {
+            if (!directory.Exists)
+                yield break;
+
             var files = directory.GetFiles("*.json");
             if (files.Length == 0)
                 yield break;
