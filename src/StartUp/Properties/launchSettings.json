@@ -35,6 +35,26 @@
     "preparedl": {
       "commandName": "Project",
       "commandLineArgs": "preparedl"
+    },
+    "startdl": {
+      "commandName": "Project",
+      "commandLineArgs": "startdownload"
+    },
+    "episode-details": {
+      "commandName": "Project",
+      "commandLineArgs": "get-episode-details --id 14304509"
+    },
+    "export-subscriptions": {
+      "commandName": "Project",
+      "commandLineArgs": "export-subscriptions -t subscriptions.txt"
+    },
+    "import-subscriptions": {
+      "commandName": "Project",
+      "commandLineArgs": "import-subscriptions -s subscriptions.txt"
+    },
+    "add-episode-details": {
+      "commandName": "Project",
+      "commandLineArgs": "add-episode-details -d \"F:\\03 Movies\\Tv\\2025\" -r"
     }
   }
 }

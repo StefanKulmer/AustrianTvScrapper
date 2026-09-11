@@ -18,7 +18,7 @@ namespace AustrianTvScrapper.StartUp.Commands
 
         private void _HandleCommand()
         {
-            _downloader.Start();
+            _downloader.Start().Wait();
         }
     }
 }

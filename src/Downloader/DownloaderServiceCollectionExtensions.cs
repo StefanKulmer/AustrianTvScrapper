@@ -9,6 +9,7 @@ namespace DownloadListCreator
         {
             services.AddTransient<IDownloader, Downloader.Services.Downloader>();
             services.AddTransient<IDirectoryProvider, DirectoryProvider>();
+            services.AddTransient<IDataDownloader, DataDownloader>();
 
             return services;
         }

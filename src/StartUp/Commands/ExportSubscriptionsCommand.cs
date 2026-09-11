@@ -30,30 +30,37 @@ namespace AustrianTvScrapper.StartUp.Commands
             _unSubscriptionManager = unSubscriptionManager;
             _fileSystem = fileSystem;
             AddOption(new Option<string>(new[] { "--target", "-t" }, getDefaultValue: () => null, "target file for export"));
+            AddOption(new Option<bool>(new[] { "--all", "-a" }, getDefaultValue: () => false, "export all; if not specified, only new one will be exported"));
 
-            Handler = CommandHandler.Create<string>(_HandleCommand);
+            Handler = CommandHandler.Create<string, bool>(_HandleCommand);
         }
 
-        private async void _HandleCommand(string target)
+        private async void _HandleCommand(string target, bool all)
         {
             var subscriptions = _subscriptionManager.GetSubscriptions();
             var unSubscriptions = _unSubscriptionManager.GetSubscriptions();
 
-            using var fs = _fileSystem.File.OpenWrite(target);
+            var fileInfo = _fileSystem.FileInfo.New(target);
+            if (fileInfo.Exists)
+            {
+                fileInfo.Delete();
+            }
+            using var fs = fileInfo.OpenWrite();
             using var writer = new StreamWriter(fs);
 
             var genres = _orfDataProvider.GetGenres().Result;
             var profiles = _orfDataProvider.GetProfiles().Result;
             foreach (var profile in profiles.OrderBy(p => p.Title))
             {
+                bool isExisting = true;
                 var hasSubscription = subscriptions.Any(s => s.ProfileId == profile.Id);
-                if (hasSubscription)
+                if (hasSubscription && all)
                 {
                     writer.Write("s");
                 }
 
                 var hasUnSubscriptions = unSubscriptions.Any(s => s.ProfileId == profile.Id);
-                if (hasUnSubscriptions)
+                if (hasUnSubscriptions && all)
                 {
                     writer.Write("u");
                 }
@@ -61,12 +68,15 @@ namespace AustrianTvScrapper.StartUp.Commands
                 if (!hasSubscription && !hasUnSubscriptions)
                 {
                     writer.Write("n");
+                    isExisting = false;
                 }
 
-                writer.Write(" ");
-
-                var genre = genres.First(g => g.TheLinks.Self.TheHref == profile.Links.Genre.Href);
-                writer.WriteLine(profile.Id + " " + profile.Title + " - " + profile.UpdatedAt.ToString("yyyy-MM-dd") + " - " + genre?.Title ?? "?");
+                if (!isExisting || all)
+                {
+                    writer.Write(" ");
+                    var genre = genres.First(g => g.TheLinks.Self.TheHref == profile.Links.Genre.Href);
+                    writer.WriteLine(profile.Id + " " + profile.Title + " - " + profile.UpdatedAt.ToString("yyyy-MM-dd") + " - " + genre?.Title ?? "?");
+                }
             }
         }
     }

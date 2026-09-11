@@ -15,6 +15,8 @@ public interface IOrfDataProvider
     Task<IReadOnlyCollection<Genre>> GetGenres();
     Task<IReadOnlyCollection<Profile>> GetProfiles();
     Task<Profile> GetProfile(int profileId);
+
+    Task<EpisodeDetail> GetEpisodeDetail(int episodeId);
 }
 
 public class OrfDataProvider : IOrfDataProvider
@@ -148,5 +150,133 @@ public class OrfDataProvider : IOrfDataProvider
         {
             return null;
         }
+    }
+
+    public async Task<EpisodeDetail> GetEpisodeDetail(int episodeId)
+    {
+        var url = $"https://api-tvthek.orf.at/api/v4.3/episode/{episodeId}";
+
+        var client = GetHttpClient();
+
+        string episodeRaw;
+        try
+        {
+            episodeRaw = await client.GetStringAsync(url);
+        }
+        catch(HttpRequestException ex)
+        {
+            Console.WriteLine($"request exception for url '{url}' with code {ex.StatusCode} {ex.Message}");
+            return null;
+        }
+
+        var episodeJsonDocument = JsonDocument.Parse(episodeRaw);
+        
+        var episodeImages = await _GetImages(client, episodeJsonDocument.RootElement);
+        var subtitles = await _GetSubtitles(client, episodeJsonDocument.RootElement);
+
+        var profileElement = episodeJsonDocument.RootElement.GetProperty("_embedded")
+            .GetProperty("profile");
+        var profileImages = await _GetImages(client, profileElement);
+
+        var segments = episodeJsonDocument.RootElement.GetProperty("_embedded")
+            .GetProperty("segments")
+            .EnumerateArray();
+        var segmentDetails = new List<SegmentDetail>();
+        foreach (var segment in segments)
+        {
+            var segmentImages = await _GetImages(client, segment);
+            var segmentSubtitles = await _GetSubtitles(client, segment);
+            var segmentDetail = new SegmentDetail()
+            {
+                JsonData = segment.ToString(),
+                Images = segmentImages,
+                Subtitles = subtitles,
+            };
+
+            segmentDetails.Add(segmentDetail);
+        }
+
+        return new EpisodeDetail()
+        {
+            JsonData = episodeRaw,
+            Images = episodeImages,
+            ProfileImages = profileImages,
+            Segments = segmentDetails,
+            Subtitles = subtitles,
+        };
+    }
+
+    private async Task<IReadOnlyCollection<ImageDetail>> _GetImages(HttpClient client, JsonElement itemElement)
+    {
+        if (!itemElement.TryGetProperty("_embedded", out var embeddedElement) || embeddedElement.ValueKind == JsonValueKind.Null)
+            return Array.Empty<ImageDetail>();
+
+        if (!embeddedElement.TryGetProperty("image", out var imageElement) || imageElement.ValueKind == JsonValueKind.Null)
+            return Array.Empty<ImageDetail>();
+
+        if (!imageElement.TryGetProperty("public_urls", out var publicUrlsElement) || publicUrlsElement.ValueKind == JsonValueKind.Null)
+            return Array.Empty<ImageDetail>();
+
+        if (publicUrlsElement.ValueKind != JsonValueKind.Object)
+            return Array.Empty<ImageDetail>();
+
+        var imageDetails = new List<ImageDetail>();
+        foreach (var childElement in publicUrlsElement.EnumerateObject())
+        {
+            var imageUrl = childElement.Value.GetProperty("url").GetString();
+            if (string.IsNullOrEmpty(imageUrl))
+                continue;
+
+            var imageData = await client.GetByteArrayAsync(imageUrl);
+            var imageDetail = new ImageDetail()
+            {
+                Name = childElement.Name,
+                Url = imageUrl,
+                Content = imageData,
+            };
+
+            imageDetails.Add(imageDetail);
+        }
+
+        return imageDetails;
+    }
+
+    private async Task<IReadOnlyCollection<SubtitleDetail>> _GetSubtitles(HttpClient client, JsonElement parentElement)
+    {
+        if (!parentElement.TryGetProperty("_embedded", out var embeddedElement))
+            return Array.Empty<SubtitleDetail>();
+
+        if (!embeddedElement.TryGetProperty("subtitle", out var subtitleElement))
+            return Array.Empty<SubtitleDetail>();
+
+        if (subtitleElement.ValueKind == JsonValueKind.Null)
+            return Array.Empty<SubtitleDetail>();
+
+        var subtitleDetails = new List<SubtitleDetail>();
+        foreach (var type in SubtitleType.All)
+        {
+            if (!subtitleElement.TryGetProperty($"{type.Prefix}_url", out var subtitleUrl))
+            {
+                continue;
+            }
+
+            var subtitleUrlString = subtitleUrl.GetString();
+            if (string.IsNullOrEmpty(subtitleUrlString))
+            {
+                continue;
+            }
+
+            var subtitleData = await client.GetByteArrayAsync(subtitleUrlString);
+            var subtitleDetail =
+                new SubtitleDetail
+                {
+                    Type = type,
+                    Url = subtitleUrlString,
+                    Data = subtitleData,
+                };
+            subtitleDetails.Add(subtitleDetail);
+        }
+
+        return subtitleDetails;
     }
 }
