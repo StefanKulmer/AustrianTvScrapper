@@ -6,7 +6,7 @@ using OrfDataProvider.Services;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.NamingConventionBinder;
+using System.CommandLine.Invocation;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
@@ -33,10 +33,12 @@ namespace AustrianTvScrapper.StartUp.Commands
             _orfDataProvider = orfDataProvider ?? throw new ArgumentNullException(nameof(orfDataProvider));
             _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
 
-            AddOption(new Option<string>(new[] { "--directory", "-d" }, "directory"));
-            AddOption(new Option<bool>(new[] { "--recurse", "-r" }, "search in all subdirectories"));
-            
-            Handler = CommandHandler.Create<string, bool>(_HandleCommand);
+            var dirOption = new Option<string>(new[] { "--directory", "-d" }) { Description = "directory" };
+            var recurseOption = new Option<bool>(new[] { "--recurse", "-r" }) { Description = "search in all subdirectories" };
+            AddOption(dirOption);
+            AddOption(recurseOption);
+
+            this.SetHandler((string directory, bool recurse) => _HandleCommand(directory, recurse), dirOption, recurseOption);
         }
 
         private void _HandleCommand(string directory, bool recurse)

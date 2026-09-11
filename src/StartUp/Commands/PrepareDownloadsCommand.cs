@@ -1,6 +1,6 @@
 ﻿using DownloadListCreator.Services;
 using System.CommandLine;
-using System.CommandLine.NamingConventionBinder;
+using System.CommandLine.Invocation;
 
 namespace AustrianTvScrapper.StartUp.Commands
 {
@@ -12,7 +12,7 @@ namespace AustrianTvScrapper.StartUp.Commands
             : base("preparedl", "queues new found episodes in the downloader list")
         {
             _downloadListCreator = downloadListCreator;
-            Handler = CommandHandler.Create(_HandleCommand);
+            this.SetHandler(() => _downloadListCreator.Create());
         }
 
         private void _HandleCommand()

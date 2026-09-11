@@ -2,7 +2,7 @@
 using Subscription.Services;
 using System;
 using System.CommandLine;
-using System.CommandLine.NamingConventionBinder;
+using System.CommandLine.Invocation;
 using System.Linq;
 
 namespace AustrianTvScrapper.StartUp.Commands
@@ -17,10 +17,12 @@ namespace AustrianTvScrapper.StartUp.Commands
         {
             _subscriptionManager = subscriptionManager;
             _orfDataProvider = orfDataProvider;
-            AddOption(new Option<int>(new[] { "--id", "-id" }, "id of TV show"));
-            AddOption(new Option<string>(new[] { "--downloadSubDirectory", "-dir" }, () => string.Empty, description: "sub directory"));
+            var idOption = new Option<int>(new[] { "--id", "-id" }) { Description = "id of TV show" };
+            var dirOption = new Option<string>(new[] { "--downloadSubDirectory", "-dir" }) { Description = "sub directory" };
+            AddOption(idOption);
+            AddOption(dirOption);
 
-            Handler = CommandHandler.Create<int, string>(_HandleCommand);
+            this.SetHandler((int id, string downloadSubDirectory) => _HandleCommand(id, downloadSubDirectory), idOption, dirOption);
         }
 
         private void _HandleCommand(int id, string downloadSubDirectory)

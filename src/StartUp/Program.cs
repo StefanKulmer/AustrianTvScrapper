@@ -5,8 +5,7 @@
 namespace SystemCommandLine.Demo
 {
     using System.CommandLine;
-    using System.CommandLine.Builder;
-    using System.CommandLine.Parsing;
+    // Note: System.CommandLine v2 uses direct invocation on RootCommand
     using System.Threading.Tasks;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
@@ -32,23 +31,15 @@ namespace SystemCommandLine.Demo
         public static async Task<int> Main(string[] args)
         {
             ServiceProvider serviceProvider = BuildServiceProvider();
-            Parser parser = BuildParser(serviceProvider);
 
-            return await parser.InvokeAsync(args).ConfigureAwait(false);
-        }
-
-        private static Parser BuildParser(ServiceProvider serviceProvider)
-        {
             var rootCommand = new RootCommand("Austrian TV Series Scrapper");
-
             foreach (Command command in serviceProvider.GetServices<Command>())
             {
                 rootCommand.AddCommand(command);
             }
 
-            var commandLineBuilder = new CommandLineBuilder(rootCommand);
-
-            return commandLineBuilder.UseDefaults().Build();
+            // Invoke the command line directly on the RootCommand using the v2 API
+            return await rootCommand.InvokeAsync(args).ConfigureAwait(false);
         }
 
         private static ServiceProvider BuildServiceProvider()

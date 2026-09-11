@@ -4,7 +4,7 @@ using Subscription.Services;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.NamingConventionBinder;
+using System.CommandLine.Invocation;
 using System.Linq;
 
 namespace AustrianTvScrapper.StartUp.Commands
@@ -18,12 +18,13 @@ namespace AustrianTvScrapper.StartUp.Commands
         public IgnoreCommand(Subscription.Services.IUnSubscriptionManager unSubscriptionManager, IOrfDataProvider orfDataProvider)
             : base("ignore", "ignores a series")
         {
-            AddOption(new Option<int>(new[] { "--id", "-id" }, "id of TV show"));
+            var idOption = new Option<int>(new[] { "--id", "-id" }) { Description = "id of TV show" };
+            AddOption(idOption);
 
             _unSubscriptionManager = unSubscriptionManager;
             _orfDataProvider = orfDataProvider;
 
-            Handler = CommandHandler.Create<int>(_HandleCommand);
+            this.SetHandler((int id) => _HandleCommand(id), idOption);
         }
 
         private void _HandleCommand(int id)

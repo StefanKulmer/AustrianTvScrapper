@@ -4,7 +4,7 @@ using Subscription.Services;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.NamingConventionBinder;
+using System.CommandLine.Invocation;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
@@ -20,8 +20,7 @@ namespace AustrianTvScrapper.StartUp.Commands
 
         public ExportSubscriptionsCommand(
             IOrfDataProvider orfDataProvider, 
-            Subscription.Services.ISubscriptionManager 
-            subscriptionManager, Subscription.Services.IUnSubscriptionManager unSubscriptionManager,
+            Subscription.Services.ISubscriptionManager subscriptionManager, Subscription.Services.IUnSubscriptionManager unSubscriptionManager,
             IFileSystem fileSystem)
             : base("export-subscriptions", "exports all profiles with subscription information. can be used for import")
         {
@@ -29,13 +28,15 @@ namespace AustrianTvScrapper.StartUp.Commands
             _subscriptionManager = subscriptionManager;
             _unSubscriptionManager = unSubscriptionManager;
             _fileSystem = fileSystem;
-            AddOption(new Option<string>(new[] { "--target", "-t" }, getDefaultValue: () => null, "target file for export"));
-            AddOption(new Option<bool>(new[] { "--all", "-a" }, getDefaultValue: () => false, "export all; if not specified, only new one will be exported"));
+            var targetOption = new Option<string>(new[] { "--target", "-t" }) { Description = "target file for export" };
+            var allOption = new Option<bool>(new[] { "--all", "-a" }) { Description = "export all; if not specified, only new one will be exported" };
+            AddOption(targetOption);
+            AddOption(allOption);
 
-            Handler = CommandHandler.Create<string, bool>(_HandleCommand);
+            this.SetHandler(async (string target, bool all) => await _HandleCommand(target, all), targetOption, allOption);
         }
 
-        private async void _HandleCommand(string target, bool all)
+        private async System.Threading.Tasks.Task _HandleCommand(string target, bool all)
         {
             var subscriptions = _subscriptionManager.GetSubscriptions();
             var unSubscriptions = _unSubscriptionManager.GetSubscriptions();

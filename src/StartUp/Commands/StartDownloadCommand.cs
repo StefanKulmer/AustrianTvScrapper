@@ -1,6 +1,6 @@
 ﻿using Downloader.Services;
 using System.CommandLine;
-using System.CommandLine.NamingConventionBinder;
+using System.CommandLine.Invocation;
 
 namespace AustrianTvScrapper.StartUp.Commands
 {
@@ -13,7 +13,7 @@ namespace AustrianTvScrapper.StartUp.Commands
         {
             _downloader = downloader;
 
-            Handler = CommandHandler.Create(_HandleCommand);
+            this.SetHandler(() => _downloader.Start().GetAwaiter().GetResult());
         }
 
         private void _HandleCommand()

@@ -2,7 +2,7 @@
 using Subscription.Services;
 using System;
 using System.CommandLine;
-using System.CommandLine.NamingConventionBinder;
+using System.CommandLine.Invocation;
 using System.Linq;
 
 namespace AustrianTvScrapper.StartUp.Commands
@@ -15,12 +15,13 @@ namespace AustrianTvScrapper.StartUp.Commands
             : base("remove-subscription", "removes a subscription")
         {
             _subscriptionManager = subscriptionManager;
-            AddOption(new Option<int>(new[] { "--id", "-id" }, "id of TV show"));
+            var idOption = new Option<int>(new[] { "--id", "-id" }) { Description = "id of TV show" };
+            AddOption(idOption);
 
-            Handler = CommandHandler.Create<int, string>(_HandleCommand);
+            this.SetHandler((int id) => _HandleCommand(id), idOption);
         }
 
-        private void _HandleCommand(int id, string downloadSubDirectory)
+        private void _HandleCommand(int id)
         {
             var subscriptions = _subscriptionManager.GetSubscriptions();
             var subscription = subscriptions.FirstOrDefault(s => s.Id == id);

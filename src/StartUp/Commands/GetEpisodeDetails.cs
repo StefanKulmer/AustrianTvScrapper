@@ -4,7 +4,7 @@ using OrfDataProvider.Services;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.NamingConventionBinder;
+using System.CommandLine.Invocation;
 using System.IO;
 using System.Text.Json;
 
@@ -18,12 +18,14 @@ namespace AustrianTvScrapper.StartUp.Commands
         public GetEpisodeDetails(IOrfDataProvider orfDataProvider)
             : base("get-episode-details", "ignores a series")
         {
-            AddOption(new Option<int>(new[] { "--id", "-id" }, "id of episode"));
-            AddOption(new Option<string>(new[] { "--directory", "-d" }, "directory"));
+            var idOption = new Option<int>(new[] { "--id", "-id" }) { Description = "id of episode" };
+            var dirOption = new Option<string>(new[] { "--directory", "-d" }) { Description = "directory" };
+            AddOption(idOption);
+            AddOption(dirOption);
 
             _orfDataProvider = orfDataProvider;
 
-            Handler = CommandHandler.Create<int, string>(_HandleCommand);
+            this.SetHandler((int id, string directory) => _HandleCommand(id, directory), idOption, dirOption);
         }
 
         private void _HandleCommand(int id, string directory)

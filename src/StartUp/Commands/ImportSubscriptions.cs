@@ -2,7 +2,7 @@
 using Subscription.Services;
 using System;
 using System.CommandLine;
-using System.CommandLine.NamingConventionBinder;
+using System.CommandLine.Invocation;
 using System.IO.Abstractions;
 using System.Linq;
 
@@ -26,12 +26,13 @@ namespace AustrianTvScrapper.StartUp.Commands
             _subscriptionManager = subscriptionManager;
             _unSubscriptionManager = unSubscriptionManager;
             _fileSystem = fileSystem;
-            AddOption(new Option<string>(new[] { "--source", "-s" }, getDefaultValue: () => null, "source file for import"));
+            var sourceOption = new Option<string>(new[] { "--source", "-s" }) { Description = "source file for import" };
+            AddOption(sourceOption);
 
-            Handler = CommandHandler.Create<string>(_HandleCommand);
+            this.SetHandler(async (string source) => await _HandleCommand(source), sourceOption);
         }
 
-        private async void _HandleCommand(string source)
+        private async System.Threading.Tasks.Task _HandleCommand(string source)
         {
             var genres = _orfDataProvider.GetGenres().Result;
             var lines = _fileSystem.File.ReadAllLines(source);
