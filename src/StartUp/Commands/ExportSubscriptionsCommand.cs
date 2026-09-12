@@ -4,7 +4,6 @@ using Subscription.Services;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Invocation;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
@@ -28,12 +27,14 @@ namespace AustrianTvScrapper.StartUp.Commands
             _subscriptionManager = subscriptionManager;
             _unSubscriptionManager = unSubscriptionManager;
             _fileSystem = fileSystem;
-            var targetOption = new Option<string>(new[] { "--target", "-t" }) { Description = "target file for export" };
-            var allOption = new Option<bool>(new[] { "--all", "-a" }) { Description = "export all; if not specified, only new one will be exported" };
-            AddOption(targetOption);
-            AddOption(allOption);
+            var targetOption = new Option<string>("--target", "-t") { Description = "target file for export" };
+            var allOption = new Option<bool>("--all", "-a") { Description = "export all; if not specified, only new one will be exported" };
+            Add(targetOption);
+            Add(allOption);
 
-            this.SetHandler(async (string target, bool all) => await _HandleCommand(target, all), targetOption, allOption);
+            this.SetAction(parseResult => _HandleCommand(
+                parseResult.GetValue(targetOption),
+                parseResult.GetValue(allOption)));
         }
 
         private async System.Threading.Tasks.Task _HandleCommand(string target, bool all)

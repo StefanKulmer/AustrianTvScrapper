@@ -2,7 +2,6 @@
 using Subscription.Services;
 using System;
 using System.CommandLine;
-using System.CommandLine.Invocation;
 using System.IO.Abstractions;
 using System.Linq;
 
@@ -26,10 +25,10 @@ namespace AustrianTvScrapper.StartUp.Commands
             _subscriptionManager = subscriptionManager;
             _unSubscriptionManager = unSubscriptionManager;
             _fileSystem = fileSystem;
-            var sourceOption = new Option<string>(new[] { "--source", "-s" }) { Description = "source file for import" };
-            AddOption(sourceOption);
+            var sourceOption = new Option<string>("--source", "-s") { Description = "source file for import" };
+            Add(sourceOption);
 
-            this.SetHandler(async (string source) => await _HandleCommand(source), sourceOption);
+            this.SetAction(parseResult => _HandleCommand(parseResult.GetValue(sourceOption)));
         }
 
         private async System.Threading.Tasks.Task _HandleCommand(string source)

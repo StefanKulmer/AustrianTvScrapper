@@ -1,6 +1,5 @@
 ﻿using Downloader.Services;
 using System.CommandLine;
-using System.CommandLine.Invocation;
 
 namespace AustrianTvScrapper.StartUp.Commands
 {
@@ -13,7 +12,7 @@ namespace AustrianTvScrapper.StartUp.Commands
         {
             _downloader = downloader;
 
-            this.SetHandler(() => _downloader.Start().GetAwaiter().GetResult());
+            this.SetAction(async _ => await _downloader.Start().ConfigureAwait(false));
         }
 
         private void _HandleCommand()

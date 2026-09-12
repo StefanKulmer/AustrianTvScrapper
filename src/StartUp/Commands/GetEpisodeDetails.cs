@@ -4,28 +4,31 @@ using OrfDataProvider.Services;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Invocation;
 using System.IO;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace AustrianTvScrapper.StartUp.Commands
 {
     internal class GetEpisodeDetails : Command
     {
-        private readonly IOrfTvSeriesScrapper _orfTvSeriesScrapper;
         private readonly IOrfDataProvider _orfDataProvider;
 
         public GetEpisodeDetails(IOrfDataProvider orfDataProvider)
             : base("get-episode-details", "ignores a series")
         {
-            var idOption = new Option<int>(new[] { "--id", "-id" }) { Description = "id of episode" };
-            var dirOption = new Option<string>(new[] { "--directory", "-d" }) { Description = "directory" };
-            AddOption(idOption);
-            AddOption(dirOption);
+            var idOption = new Option<int>("--id", "-id") { Description = "id of episode" };
+            var dirOption = new Option<string>("--directory", "-d") { Description = "directory" };
+            Add(idOption);
+            Add(dirOption);
 
             _orfDataProvider = orfDataProvider;
 
-            this.SetHandler((int id, string directory) => _HandleCommand(id, directory), idOption, dirOption);
+            this.SetAction(parseResult =>
+            {
+                _HandleCommand(parseResult.GetValue(idOption), parseResult.GetValue(dirOption));
+                return Task.CompletedTask;
+            });
         }
 
         private void _HandleCommand(int id, string directory)

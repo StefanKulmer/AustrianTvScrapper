@@ -3,7 +3,6 @@ using OrfDataProvider.Services;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Invocation;
 using System.Linq;
 
 namespace AustrianTvScrapper.StartUp.Commands
@@ -21,8 +20,8 @@ namespace AustrianTvScrapper.StartUp.Commands
             _orfTvSeriesSnapshotService = orfTvSeriesSnapshotService;
             _orfDataProvider = orfDataProvider;
 
-            var episodesOption = new Option<bool>(new[] { "--episodes", "-e" }) { Description = "shows episodes" };
-            AddOption(episodesOption);
+            var episodesOption = new Option<bool>("--episodes", "-e") { Description = "shows episodes" };
+            Add(episodesOption);
 
             //AddArgument(new Argument<string>("channel", getDefaultValue: () => "Orf"));
             //AddOption(new Option<bool>(new[] { "--subscriptionInfo", "-si" }, getDefaultValue: () => true, "shows subscription info"));
@@ -32,7 +31,7 @@ namespace AustrianTvScrapper.StartUp.Commands
             //AddOption(new Option<string>(new[] { "--compareSnapshotFilename", "-cs" }, getDefaultValue: () => null, "compares to a snapshot"));
             //AddOption(new Option<bool>(new[] { "--showNewOnly", "-sno" }, getDefaultValue: () => true, "show new series only when comparing to snapshot"));
 
-            this.SetHandler(async (bool showEpisodes) => await System.Threading.Tasks.Task.Run(() => _HandleCommand(showEpisodes)), episodesOption);
+            this.SetAction(parseResult => _HandleCommand(parseResult.GetValue(episodesOption)));
         }
 
         private async System.Threading.Tasks.Task _HandleCommand(bool showEpisodes)

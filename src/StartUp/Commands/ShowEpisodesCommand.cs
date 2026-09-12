@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Invocation;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,17 +19,22 @@ namespace AustrianTvScrapper.StartUp.Commands
             this.seriesScrapper = seriesScrapper;
             this.episodesProvider = episodesProvider;
 
-            var channelArg = new Argument<string>("channel", () => "Orf");
-            var idOption = new Option<int?>(new[] { "--id", "-id" }) { Description = "id of series" };
-            var allOption = new Option<bool>(new[] { "--all", "-a" }) { Description = "show episodes for all subscribed series, overrides id" };
-            var newOnlyOption = new Option<bool>(new[] { "--newOnly", "-no" }) { Description = "shows only new episodes" };
+            var channelArg = new Argument<string>("channel") { Description = "channel" };
+            channelArg.DefaultValueFactory = _ => "Orf";
+            var idOption = new Option<int?>("--id", "-id") { Description = "id of series" };
+            var allOption = new Option<bool>("--all", "-a") { Description = "show episodes for all subscribed series, overrides id" };
+            var newOnlyOption = new Option<bool>("--newOnly", "-no") { Description = "shows only new episodes" };
 
-            AddArgument(channelArg);
-            AddOption(idOption);
-            AddOption(allOption);
-            AddOption(newOnlyOption);
+            Add(channelArg);
+            Add(idOption);
+            Add(allOption);
+            Add(newOnlyOption);
 
-            this.SetHandler(async (string channel, int? id, bool all, bool newOnly) => await _HandleCommand(channel, id, all, newOnly), channelArg, idOption, allOption, newOnlyOption);
+            this.SetAction(parseResult => _HandleCommand(
+                parseResult.GetValue(channelArg),
+                parseResult.GetValue(idOption),
+                parseResult.GetValue(allOption),
+                parseResult.GetValue(newOnlyOption)));
         }
 
         private async Task _HandleCommand(string channel, int? id, bool all, bool newOnly)

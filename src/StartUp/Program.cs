@@ -5,7 +5,6 @@
 namespace SystemCommandLine.Demo
 {
     using System.CommandLine;
-    // Note: System.CommandLine v2 uses direct invocation on RootCommand
     using System.Threading.Tasks;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
@@ -35,11 +34,10 @@ namespace SystemCommandLine.Demo
             var rootCommand = new RootCommand("Austrian TV Series Scrapper");
             foreach (Command command in serviceProvider.GetServices<Command>())
             {
-                rootCommand.AddCommand(command);
+                rootCommand.Add(command);
             }
 
-            // Invoke the command line directly on the RootCommand using the v2 API
-            return await rootCommand.InvokeAsync(args).ConfigureAwait(false);
+            return await rootCommand.Parse(args).InvokeAsync().ConfigureAwait(false);
         }
 
         private static ServiceProvider BuildServiceProvider()

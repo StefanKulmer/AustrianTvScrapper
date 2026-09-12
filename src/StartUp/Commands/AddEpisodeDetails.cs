@@ -6,7 +6,6 @@ using OrfDataProvider.Services;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Invocation;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
@@ -17,7 +16,6 @@ namespace AustrianTvScrapper.StartUp.Commands
 {
     internal class AddEpisodeDetails : Command
     {
-        private readonly IOrfTvSeriesScrapper _orfTvSeriesScrapper;
         private readonly IDataDownloader _dataDownloader;
         private readonly IOrfDataProvider _orfDataProvider;
         private readonly IFileSystem _fileSystem;
@@ -33,12 +31,16 @@ namespace AustrianTvScrapper.StartUp.Commands
             _orfDataProvider = orfDataProvider ?? throw new ArgumentNullException(nameof(orfDataProvider));
             _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
 
-            var dirOption = new Option<string>(new[] { "--directory", "-d" }) { Description = "directory" };
-            var recurseOption = new Option<bool>(new[] { "--recurse", "-r" }) { Description = "search in all subdirectories" };
-            AddOption(dirOption);
-            AddOption(recurseOption);
+            var dirOption = new Option<string>("--directory", "-d") { Description = "directory" };
+            var recurseOption = new Option<bool>("--recurse", "-r") { Description = "search in all subdirectories" };
+            Add(dirOption);
+            Add(recurseOption);
 
-            this.SetHandler((string directory, bool recurse) => _HandleCommand(directory, recurse), dirOption, recurseOption);
+            this.SetAction(parseResult =>
+            {
+                _HandleCommand(parseResult.GetValue(dirOption), parseResult.GetValue(recurseOption));
+                return Task.CompletedTask;
+            });
         }
 
         private void _HandleCommand(string directory, bool recurse)

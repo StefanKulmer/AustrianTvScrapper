@@ -2,8 +2,8 @@
 using Subscription.Services;
 using System;
 using System.CommandLine;
-using System.CommandLine.Invocation;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace AustrianTvScrapper.StartUp.Commands
 {
@@ -15,10 +15,14 @@ namespace AustrianTvScrapper.StartUp.Commands
             : base("remove-subscription", "removes a subscription")
         {
             _subscriptionManager = subscriptionManager;
-            var idOption = new Option<int>(new[] { "--id", "-id" }) { Description = "id of TV show" };
-            AddOption(idOption);
+            var idOption = new Option<int>("--id", "-id") { Description = "id of TV show" };
+            Add(idOption);
 
-            this.SetHandler((int id) => _HandleCommand(id), idOption);
+            this.SetAction(parseResult =>
+            {
+                _HandleCommand(parseResult.GetValue(idOption));
+                return Task.CompletedTask;
+            });
         }
 
         private void _HandleCommand(int id)

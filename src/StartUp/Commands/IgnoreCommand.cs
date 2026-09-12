@@ -4,27 +4,30 @@ using Subscription.Services;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Invocation;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace AustrianTvScrapper.StartUp.Commands
 {
     internal class IgnoreCommand : Command
     {
-        private readonly IOrfTvSeriesScrapper _orfTvSeriesScrapper;
         private readonly IUnSubscriptionManager _unSubscriptionManager;
         private readonly IOrfDataProvider _orfDataProvider;
 
         public IgnoreCommand(Subscription.Services.IUnSubscriptionManager unSubscriptionManager, IOrfDataProvider orfDataProvider)
             : base("ignore", "ignores a series")
         {
-            var idOption = new Option<int>(new[] { "--id", "-id" }) { Description = "id of TV show" };
-            AddOption(idOption);
+            var idOption = new Option<int>("--id", "-id") { Description = "id of TV show" };
+            Add(idOption);
 
             _unSubscriptionManager = unSubscriptionManager;
             _orfDataProvider = orfDataProvider;
 
-            this.SetHandler((int id) => _HandleCommand(id), idOption);
+            this.SetAction(parseResult =>
+            {
+                _HandleCommand(parseResult.GetValue(idOption));
+                return Task.CompletedTask;
+            });
         }
 
         private void _HandleCommand(int id)

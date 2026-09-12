@@ -30,7 +30,7 @@ namespace AustrianTvScrapper.Services
             var result = sut.Compare(left, right);
 
             Assert.NotNull(result);
-            Assert.Equal(1, result.Count);
+            Assert.Single(result);
             Assert.Equal("1", result.First().Value.Id);
             Assert.Equal(ComparisonResult.ExistsOnBothSides, result.First().Key);
         }
