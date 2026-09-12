@@ -33,7 +33,7 @@ namespace AustrianTvScrapper.StartUp.Commands
 
         private async System.Threading.Tasks.Task _HandleCommand(string source)
         {
-            var genres = _orfDataProvider.GetGenres().Result;
+            var genres = await _orfDataProvider.GetGenres().ConfigureAwait(false);
             var lines = _fileSystem.File.ReadAllLines(source);
 
             foreach (var line in lines)
@@ -53,7 +53,7 @@ namespace AustrianTvScrapper.StartUp.Commands
                 if (!int.TryParse(idText, out var id))
                     continue;
 
-                var profile = _orfDataProvider.GetProfile(id).Result;
+                var profile = await _orfDataProvider.GetProfile(id).ConfigureAwait(false);
                 if (profile == null)
                 {
                     Console.WriteLine($"profile {id} doesn't exist.");
@@ -88,7 +88,7 @@ namespace AustrianTvScrapper.StartUp.Commands
                                 subDir = "(Serien)";
                                 break;
                             case "Film":
-                                var episodes = _orfDataProvider.GetEpisodesOfProfileAsync(id).Result;
+                                var episodes = await _orfDataProvider.GetEpisodesOfProfileAsync(id).ConfigureAwait(false);
                                 if (episodes.Count > 1)
                                 {
                                     subDir = "(Serien)";

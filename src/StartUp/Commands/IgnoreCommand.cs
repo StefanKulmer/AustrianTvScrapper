@@ -23,16 +23,12 @@ namespace AustrianTvScrapper.StartUp.Commands
             _unSubscriptionManager = unSubscriptionManager;
             _orfDataProvider = orfDataProvider;
 
-            this.SetAction(parseResult =>
-            {
-                _HandleCommand(parseResult.GetValue(idOption));
-                return Task.CompletedTask;
-            });
+            this.SetAction(parseResult => _HandleCommand(parseResult.GetValue(idOption)));
         }
 
-        private void _HandleCommand(int id)
+        private async Task _HandleCommand(int id)
         {
-            var profile = _orfDataProvider.GetProfile(id).Result;
+            var profile = await _orfDataProvider.GetProfile(id).ConfigureAwait(false);
             if (profile == null)
             {
                 Console.WriteLine($"profile {id} doesn't exist.");

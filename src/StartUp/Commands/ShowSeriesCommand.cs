@@ -36,8 +36,8 @@ namespace AustrianTvScrapper.StartUp.Commands
 
         private async System.Threading.Tasks.Task _HandleCommand(bool showEpisodes)
         {
-            var genres = _orfDataProvider.GetGenres().Result;
-            var profiles = _orfDataProvider.GetProfiles().Result;
+            var genres = await _orfDataProvider.GetGenres().ConfigureAwait(false);
+            var profiles = await _orfDataProvider.GetProfiles().ConfigureAwait(false);
             foreach (var profile in profiles.OrderBy(p => p.Title))
             {
                 var genre = genres.First(g => g.TheLinks.Self.TheHref == profile.Links.Genre.Href);
@@ -46,7 +46,7 @@ namespace AustrianTvScrapper.StartUp.Commands
 
                 if (showEpisodes)
                 {
-                    var episodes = _orfDataProvider.GetEpisodesOfProfileAsync(profile.Id).Result;
+                    var episodes = await _orfDataProvider.GetEpisodesOfProfileAsync(profile.Id).ConfigureAwait(false);
                     Console.WriteLine("\t{0} episodes", episodes.Count);
                     Console.WriteLine("\t{0:yyyy-MM-dd} {1}", episodes.First().ReleaseDate, episodes.First().Name);
                 }

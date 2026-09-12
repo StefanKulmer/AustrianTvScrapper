@@ -50,8 +50,8 @@ namespace AustrianTvScrapper.StartUp.Commands
             using var fs = fileInfo.OpenWrite();
             using var writer = new StreamWriter(fs);
 
-            var genres = _orfDataProvider.GetGenres().Result;
-            var profiles = _orfDataProvider.GetProfiles().Result;
+            var genres = await _orfDataProvider.GetGenres().ConfigureAwait(false);
+            var profiles = await _orfDataProvider.GetProfiles().ConfigureAwait(false);
             foreach (var profile in profiles.OrderBy(p => p.Title))
             {
                 bool isExisting = true;

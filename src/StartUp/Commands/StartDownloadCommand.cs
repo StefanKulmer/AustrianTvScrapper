@@ -14,10 +14,5 @@ namespace AustrianTvScrapper.StartUp.Commands
 
             this.SetAction(async _ => await _downloader.Start().ConfigureAwait(false));
         }
-
-        private void _HandleCommand()
-        {
-            _downloader.Start().Wait();
-        }
     }
 }

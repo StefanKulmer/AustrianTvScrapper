@@ -29,15 +29,28 @@ namespace SystemCommandLine.Demo
         /// <returns>When complete, an integer representing success (0) or failure (non-0).</returns>
         public static async Task<int> Main(string[] args)
         {
-            ServiceProvider serviceProvider = BuildServiceProvider();
-
-            var rootCommand = new RootCommand("Austrian TV Series Scrapper");
-            foreach (Command command in serviceProvider.GetServices<Command>())
+            try
             {
-                rootCommand.Add(command);
-            }
+                ServiceProvider serviceProvider = BuildServiceProvider();
 
-            return await rootCommand.Parse(args).InvokeAsync().ConfigureAwait(false);
+                var rootCommand = new RootCommand("Austrian TV Series Scrapper");
+                foreach (Command command in serviceProvider.GetServices<Command>())
+                {
+                    rootCommand.Add(command);
+                }
+
+                return await rootCommand.Parse(args).InvokeAsync().ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                Console.Error.WriteLine("Operation canceled.");
+                return 130;
+            }
+            catch (Exception exception)
+            {
+                Console.Error.WriteLine($"Error: {exception.Message}");
+                return 1;
+            }
         }
 
         private static ServiceProvider BuildServiceProvider()

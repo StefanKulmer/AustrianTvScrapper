@@ -24,16 +24,14 @@ namespace AustrianTvScrapper.StartUp.Commands
 
             _orfDataProvider = orfDataProvider;
 
-            this.SetAction(parseResult =>
-            {
-                _HandleCommand(parseResult.GetValue(idOption), parseResult.GetValue(dirOption));
-                return Task.CompletedTask;
-            });
+            this.SetAction(parseResult => _HandleCommand(
+                parseResult.GetValue(idOption),
+                parseResult.GetValue(dirOption)));
         }
 
-        private void _HandleCommand(int id, string directory)
+        private async Task _HandleCommand(int id, string directory)
         {
-            var episode = _orfDataProvider.GetEpisodeDetail(id).Result;
+            var episode = await _orfDataProvider.GetEpisodeDetail(id).ConfigureAwait(false);
             if (episode == null)
             {
                 Console.WriteLine($"episode with {id} doesn't exist.");

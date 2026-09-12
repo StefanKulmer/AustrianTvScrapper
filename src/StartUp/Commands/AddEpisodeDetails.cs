@@ -36,14 +36,12 @@ namespace AustrianTvScrapper.StartUp.Commands
             Add(dirOption);
             Add(recurseOption);
 
-            this.SetAction(parseResult =>
-            {
-                _HandleCommand(parseResult.GetValue(dirOption), parseResult.GetValue(recurseOption));
-                return Task.CompletedTask;
-            });
+            this.SetAction(parseResult => _HandleCommand(
+                parseResult.GetValue(dirOption),
+                parseResult.GetValue(recurseOption)));
         }
 
-        private void _HandleCommand(string directory, bool recurse)
+        private async Task _HandleCommand(string directory, bool recurse)
         {
             var directoryInfo = _fileSystem.DirectoryInfo.New(directory);
 
@@ -59,7 +57,7 @@ namespace AustrianTvScrapper.StartUp.Commands
 
             foreach (var jsonFile in jsonFiles)
             {
-                _ProcessDirectory(jsonFile).Wait();
+                await _ProcessDirectory(jsonFile).ConfigureAwait(false);
             }
         }
 
@@ -69,7 +67,7 @@ namespace AustrianTvScrapper.StartUp.Commands
             var ytdlJsonDocument = JsonDocument.Parse(fileContent);
             var id = Convert.ToInt32(ytdlJsonDocument.RootElement.GetProperty("id").GetString());
 
-            var episode = _orfDataProvider.GetEpisodeDetail(id).Result;
+            var episode = await _orfDataProvider.GetEpisodeDetail(id).ConfigureAwait(false);
             if (episode == null)
             {
                 Console.WriteLine($"episode with {id} doesn't exist.");

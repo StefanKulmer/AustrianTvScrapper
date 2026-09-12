@@ -22,16 +22,14 @@ namespace AustrianTvScrapper.StartUp.Commands
             Add(idOption);
             Add(dirOption);
 
-            this.SetAction(parseResult =>
-            {
-                _HandleCommand(parseResult.GetValue(idOption), parseResult.GetValue(dirOption));
-                return Task.CompletedTask;
-            });
+            this.SetAction(parseResult => _HandleCommand(
+                parseResult.GetValue(idOption),
+                parseResult.GetValue(dirOption)));
         }
 
-        private void _HandleCommand(int id, string downloadSubDirectory)
+        private async Task _HandleCommand(int id, string downloadSubDirectory)
         {
-            var profile = _orfDataProvider.GetProfile(id).Result;
+            var profile = await _orfDataProvider.GetProfile(id).ConfigureAwait(false);
             if (profile == null)
             {
                 Console.WriteLine($"profile {id} doesn't exist.");
@@ -52,7 +50,7 @@ namespace AustrianTvScrapper.StartUp.Commands
                 Created = DateTime.Now,
             };
 
-            var genres = _orfDataProvider.GetGenres().Result;
+            var genres = await _orfDataProvider.GetGenres().ConfigureAwait(false);
             var genre = genres.First(g => g.TheLinks.Self.TheHref == profile.Links.Genre.Href);
             string subDir = null;
             if (genre != null)
@@ -66,7 +64,7 @@ namespace AustrianTvScrapper.StartUp.Commands
                         subDir = "(Serien)";
                         break;
                     case "Film":
-                        var episodes = _orfDataProvider.GetEpisodesOfProfileAsync(id).Result;
+                        var episodes = await _orfDataProvider.GetEpisodesOfProfileAsync(id).ConfigureAwait(false);
                         if (episodes.Count > 1)
                         {
                             subDir = "(Serien)";
