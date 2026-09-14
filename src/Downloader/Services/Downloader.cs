@@ -62,7 +62,7 @@ namespace Downloader.Services
                 var processStartInfo = new ProcessStartInfo()
                 {
                     //Arguments = $"--write-description --write-annotations --write-all-thumbnails --write-info-json --limit-rate 500K {download.Url}",
-                    Arguments = $"--write-description --restrict-filenames --write-all-thumbnails --write-info-json {download.Url}",
+                    Arguments = $"--write-description --windows-filenames--restrict-filenames --write-all-thumbnails --write-info-json {download.Url}",
                     //Arguments = $"--write-description --compat-options filename-sanitization --write-all-thumbnails {download.Url}",
                     FileName = _downloaderDirectoryProvider.YtDlpFile.FullName,
                     WorkingDirectory = workingDirectory,
@@ -99,7 +99,7 @@ namespace Downloader.Services
                     var downloadFileName = $"{mainFileNameWithoutExtension}.download{firstFile.Extension}";
 
                     firstFile.CopyTo(_fileSystem.Path.Combine(downloadDirectory.FullName, downloadFileName));
-                    firstFile.MoveTo(_fileSystem.Path.Combine(_downloadListDirectoryProvider.Succeeded.FullName, firstFile.Name));
+                    firstFile.MoveTo(_fileSystem.Path.Combine(_downloadListDirectoryProvider.Succeeded.FullName, firstFile.Name), true);
 
                     var dataFileName = $"{mainFileNameWithoutExtension}.data.zip";
                     var dataFilePath = Path.Combine(downloadDirectory.FullName, dataFileName);
